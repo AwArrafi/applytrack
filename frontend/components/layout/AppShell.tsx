@@ -4,13 +4,13 @@
 // (mobile menu open, Add Application dialog open). The page content passed in
 // as `children` can still be Server Components.
 
-import { useState, type ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { AddApplicationDialog } from "@/components/applications/AddApplicationDialog";
 import { Sidebar, type NavCounts } from "./Sidebar";
 import { TopBar } from "./TopBar";
 
 interface AppShellProps {
-  navCounts: NavCounts;
+  navCounts: Promise<NavCounts | null>;
   userName: string;
   children: ReactNode;
 }
@@ -19,6 +19,8 @@ interface AppShellProps {
 export function AppShell({ navCounts, userName, children }: AppShellProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  // Stable, so the dialog's "close after save" effect runs only when a save finishes.
+  const closeAdd = useCallback(() => setAddOpen(false), []);
 
   return (
     <div className="min-h-full">
@@ -36,7 +38,7 @@ export function AppShell({ navCounts, userName, children }: AppShellProps) {
         />
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
       </div>
-      <AddApplicationDialog open={addOpen} onClose={() => setAddOpen(false)} />
+      <AddApplicationDialog open={addOpen} onClose={closeAdd} />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { Brand } from "./Sidebar";
 /** Breadcrumb trail for each route: [section, page]. */
 const BREADCRUMBS: Record<string, [string, string]> = {
   "/": ["Dashboard", "Overview"],
+  "/applications": ["Applications", "All"],
 };
 
 interface TopBarProps {

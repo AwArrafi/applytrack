@@ -70,6 +70,8 @@ export interface WeeklyActivity {
 }
 
 export interface DashboardSummary {
+  /** The backend's current date (YYYY-MM-DD) in its configured time zone. */
+  today: string;
   total_applications: number;
   active_applications: number;
   /** Distinct companies among the active applications. */

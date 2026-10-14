@@ -7,12 +7,6 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 });
 
-const weekdayDateFormatter = new Intl.DateTimeFormat("en-US", {
-  weekday: "short",
-  month: "short",
-  day: "numeric",
-});
-
 const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
@@ -53,11 +47,6 @@ export function formatUpcomingDay(isoDateTime: string, today: string): string {
   if (days === 1) return "Tomorrow";
   if (days < 7) return weekdayFormatter.format(parseDate(isoDateTime));
   return formatShortDate(isoDateTime);
-}
-
-/** "2026-10-15T14:00:00" -> "Thu, Oct 15" */
-export function formatWeekdayDate(isoDateTime: string): string {
-  return weekdayDateFormatter.format(new Date(isoDateTime));
 }
 
 /** "2026-10-15T14:00:00" -> "2:00 PM" */

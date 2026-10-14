@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppShell } from "@/components/layout/AppShell";
-import { getMockDashboardSummary, MOCK_USER } from "@/lib/mock-data";
+import { apiGet } from "@/lib/api";
+import { USER_NAME } from "@/lib/constants";
+import type { DashboardSummary } from "@/lib/types";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,11 +25,10 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
-  const summary = getMockDashboardSummary();
-  const navCounts = {
-    applications: summary.total_applications,
-    upcomingInterviews: summary.upcoming_interview_count,
-  };
+  // Not awaited: the sidebar shows the counts once they arrive, and hides them if the API is down.
+  const navCounts = apiGet<DashboardSummary>("/dashboard/")
+    .then((s) => ({ applications: s.total_applications, upcomingInterviews: s.upcoming_interview_count }))
+    .catch(() => null);
 
   return (
     <html
@@ -35,7 +36,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full font-sans">
-        <AppShell navCounts={navCounts} userName={MOCK_USER.name}>
+        <AppShell navCounts={navCounts} userName={USER_NAME}>
           {children}
         </AppShell>
       </body>

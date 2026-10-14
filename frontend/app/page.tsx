@@ -5,24 +5,35 @@ import { UpcomingInterviews } from "@/components/dashboard/UpcomingInterviews";
 import { WeeklyGoal } from "@/components/dashboard/WeeklyGoal";
 import { BriefcaseIcon, CalendarIcon, PendingIcon, TrendingUpIcon, TrophyIcon } from "@/components/ui/icons";
 import { StatCard } from "@/components/ui/StatCard";
-import { WEEKLY_APPLICATION_GOAL } from "@/lib/constants";
+import { Suspense } from "react";
+import { Card } from "@/components/ui/Card";
+import { apiGet } from "@/lib/api";
+import { USER_NAME, WEEKLY_APPLICATION_GOAL } from "@/lib/constants";
 import { formatTime, formatUpcomingDay } from "@/lib/format";
-import { getMockDashboardSummary, MOCK_NOW, MOCK_TODAY, MOCK_USER } from "@/lib/mock-data";
+import type { DashboardSummary } from "@/lib/types";
 
-function greeting(isoDateTime: string): string {
-  const hour = Number(isoDateTime.slice(11, 13));
+function greeting(): string {
+  const hour = new Date().getHours();
   if (hour < 12) return "Good morning";
   if (hour < 18) return "Good afternoon";
   return "Good evening";
 }
 
 export default function DashboardPage() {
-  const summary = getMockDashboardSummary();
+  return (
+    <Suspense fallback={<Card><p className="py-16 text-center text-sm text-ink-muted">Loading your dashboard…</p></Card>}>
+      <Dashboard />
+    </Suspense>
+  );
+}
+
+async function Dashboard() {
+  const summary = await apiGet<DashboardSummary>("/dashboard/");
   const submitted = summary.total_applications - summary.status_counts.wishlist;
   const offerRate = submitted ? Math.round((summary.offer_count / submitted) * 100) : 0;
 
   const next = summary.upcoming_interviews[0];
-  const nextDay = next && formatUpcomingDay(next.scheduled_at, MOCK_TODAY);
+  const nextDay = next && formatUpcomingDay(next.scheduled_at, summary.today);
   const nextHint = next
     ? `Next: ${next.company_name} ${nextDay === "Today" || nextDay === "Tomorrow" ? nextDay.toLowerCase() : nextDay} ${formatTime(next.scheduled_at)}`
     : "Nothing scheduled yet";
@@ -31,11 +42,8 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <header>
         <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight text-ink sm:text-[1.75rem]">
-          {greeting(MOCK_NOW)}, {MOCK_USER.first_name}
+          {greeting()}, {USER_NAME.split(" ")[0]}
           <span aria-hidden="true">👋</span>
-          <span className="rounded-full bg-primary-50 px-2 py-0.5 text-xs font-medium tracking-normal text-primary-700 ring-1 ring-inset ring-primary-100">
-            Sample data
-          </span>
         </h1>
         <p className="mt-1 text-sm text-ink-muted">
           Here&apos;s an overview of your job search pipeline. You have{" "}
@@ -94,14 +102,14 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-7">
           <ActivityChart weeks={summary.weekly_activity} />
-          <RecentApplications applications={summary.recent_applications} today={MOCK_TODAY} />
+          <RecentApplications applications={summary.recent_applications} today={summary.today} />
         </div>
         <div className="space-y-6 lg:col-span-5">
           <StatusBreakdown counts={summary.status_counts} total={summary.total_applications} />
           <UpcomingInterviews
             interviews={summary.upcoming_interviews.slice(0, 3)}
             totalUpcoming={summary.upcoming_interview_count}
-            today={MOCK_TODAY}
+            today={summary.today}
           />
           <WeeklyGoal submitted={summary.applied_last_7_days} goal={WEEKLY_APPLICATION_GOAL} />
         </div>

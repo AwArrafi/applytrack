@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'applications',
 ]
 
 MIDDLEWARE = [
@@ -134,7 +135,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# Decides what "today" and "this week" mean on the dashboard.
+TIME_ZONE = os.environ.get('DJANGO_TIME_ZONE', 'Asia/Jakarta')
 
 USE_I18N = True
 

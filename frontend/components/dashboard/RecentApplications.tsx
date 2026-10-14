@@ -1,24 +1,11 @@
+import Link from "next/link";
 import { Card } from "@/components/ui/Card";
+import { CompanyAvatar } from "@/components/ui/CompanyAvatar";
+import { ChevronRightIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { WORK_ARRANGEMENT_LABELS } from "@/lib/constants";
 import { formatDaysAgo } from "@/lib/format";
 import type { Application } from "@/lib/types";
-
-// Company initials get a color picked from the name, so the same company
-// always looks the same.
-const AVATAR_COLORS = [
-  "bg-primary-100 text-primary-700",
-  "bg-blue-50 text-blue-700",
-  "bg-rose-50 text-rose-600",
-  "bg-purple-50 text-purple-700",
-  "bg-emerald-50 text-emerald-700",
-  "bg-amber-50 text-amber-700",
-];
-
-function avatarColor(name: string): string {
-  const hash = [...name].reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
-}
 
 interface RecentApplicationsProps {
   applications: Application[];
@@ -29,7 +16,20 @@ interface RecentApplicationsProps {
 /** The most recently updated applications. Less important columns hide on small screens. */
 export function RecentApplications({ applications, today }: RecentApplicationsProps) {
   return (
-    <Card title="Recent Applications" description="Latest updates across your pipeline" padded={false}>
+    <Card
+      title="Recent Applications"
+      description="Latest updates across your pipeline"
+      padded={false}
+      action={
+        <Link
+          href="/applications"
+          className="flex shrink-0 items-center gap-0.5 rounded text-xs font-medium text-primary-700 hover:text-primary-600 focus-visible:outline-2 focus-visible:outline-primary-600"
+        >
+          View all
+          <ChevronRightIcon className="size-4" />
+        </Link>
+      }
+    >
       {applications.length === 0 ? (
         <p className="px-5 py-10 text-center text-sm text-ink-muted">
           No applications yet. Your latest activity will appear here.
@@ -51,12 +51,7 @@ export function RecentApplications({ applications, today }: RecentApplicationsPr
                 <tr key={app.id} className="transition-colors hover:bg-surface-muted/60">
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
-                      <span
-                        className={`flex size-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${avatarColor(app.company_name)}`}
-                        aria-hidden="true"
-                      >
-                        {app.company_name[0]}
-                      </span>
+                      <CompanyAvatar name={app.company_name} />
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-ink">{app.company_name}</p>
                         <p className="max-w-56 truncate text-ink-muted">{app.job_title}</p>

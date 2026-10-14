@@ -4,15 +4,36 @@
     {
       "name": "frontend",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "frontend", "run", "dev"],
+      "runtimeArgs": [
+        "--prefix",
+        "frontend",
+        "run",
+        "dev"
+      ],
       "port": 3000
     },
     {
       "name": "frontend-prod",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "frontend", "run", "start"],
+      "runtimeArgs": [
+        "--prefix",
+        "frontend",
+        "run",
+        "start"
+      ],
       "port": 3100,
       "autoPort": true
+    },
+    {
+      "name": "backend",
+      "runtimeExecutable": "backend/.venv/Scripts/python.exe",
+      "runtimeArgs": [
+        "backend/manage.py",
+        "runserver",
+        "8001",
+        "--noreload"
+      ],
+      "port": 8001
     }
   ]
 }

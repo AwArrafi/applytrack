@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, type ComponentType, type SVGProps } from "react";
+import { Suspense, use, useEffect, type ComponentType, type SVGProps } from "react";
 import {
   BriefcaseIcon,
   CalendarIcon,
@@ -32,14 +32,15 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Overview", href: "/", icon: DashboardIcon },
-  { label: "Applications", href: "/applications", icon: BriefcaseIcon, count: "applications", comingSoon: true },
+  { label: "Applications", href: "/applications", icon: BriefcaseIcon, count: "applications" },
   { label: "Interview Calendar", href: "/interviews", icon: CalendarIcon, count: "upcomingInterviews", comingSoon: true },
   { label: "Analytics", href: "/analytics", icon: ChartIcon, comingSoon: true },
   { label: "Settings", href: "/settings", icon: SettingsIcon, comingSoon: true },
 ];
 
 interface SidebarProps {
-  counts: NavCounts;
+  /** Streams in from the API; null when it can't be reached. */
+  counts: Promise<NavCounts | null>;
   userName: string;
   mobileOpen: boolean;
   onMobileClose: () => void;
@@ -117,7 +118,8 @@ export function Brand() {
 }
 
 interface SidebarBodyProps {
-  counts: NavCounts;
+  /** Streams in from the API; null when it can't be reached. */
+  counts: Promise<NavCounts | null>;
   userName: string;
   onNavigate?: () => void;
   onAddApplication: () => void;
@@ -154,7 +156,7 @@ function SidebarBody({ counts, userName, onNavigate, onAddApplication }: Sidebar
           </span>
           <span className="min-w-0">
             <span className="block truncate text-xs font-semibold text-ink">{userName}</span>
-            <span className="block truncate text-xs text-ink-muted">Sample account</span>
+            <span className="block truncate text-xs text-ink-muted">Local account</span>
           </span>
         </div>
       </div>
@@ -162,7 +164,7 @@ function SidebarBody({ counts, userName, onNavigate, onAddApplication }: Sidebar
   );
 }
 
-function NavLinks({ counts, onNavigate }: { counts: NavCounts; onNavigate?: () => void }) {
+function NavLinks({ counts, onNavigate }: { counts: Promise<NavCounts | null>; onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
@@ -171,16 +173,11 @@ function NavLinks({ counts, onNavigate }: { counts: NavCounts; onNavigate?: () =
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-          const count = item.count ? counts[item.count] : undefined;
           const base = "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium";
-          const badge = count !== undefined && (
-            <span
-              className={`ml-auto rounded-full px-2 py-0.5 font-mono text-xs ${
-                item.count === "upcomingInterviews" ? "bg-primary-100 text-primary-700" : "bg-primary-50 text-ink-muted"
-              }`}
-            >
-              {count}
-            </span>
+          const badge = item.count && (
+            <Suspense fallback={null}>
+              <CountBadge counts={counts} name={item.count} />
+            </Suspense>
           );
 
           if (item.comingSoon) {
@@ -214,5 +211,19 @@ function NavLinks({ counts, onNavigate }: { counts: NavCounts; onNavigate?: () =
         })}
       </ul>
     </nav>
+  );
+}
+
+function CountBadge({ counts, name }: { counts: Promise<NavCounts | null>; name: keyof NavCounts }) {
+  const value = use(counts)?.[name];
+  if (value === undefined) return null;
+  return (
+    <span
+      className={`ml-auto rounded-full px-2 py-0.5 font-mono text-xs ${
+        name === "upcomingInterviews" ? "bg-primary-100 text-primary-700" : "bg-primary-50 text-ink-muted"
+      }`}
+    >
+      {value}
+    </span>
   );
 }

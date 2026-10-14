@@ -32,3 +32,6 @@ export const INTERVIEW_TYPE_LABELS: Record<InterviewType, string> = {
 
 /** Applications per week the dashboard goal widget tracks. Becomes a user setting later. */
 export const WEEKLY_APPLICATION_GOAL = 5;
+
+// shortcut: fixed name until login exists; then it comes from the signed-in user.
+export const USER_NAME = "Awang Setiawan";
