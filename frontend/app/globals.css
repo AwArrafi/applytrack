@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/*
+  Design tokens, taken from the ApplyTrack Stitch design.
+  Tailwind v4 turns each --color-* variable into utilities,
+  e.g. --color-surface -> bg-surface, --color-ink-muted -> text-ink-muted.
+  Use these semantic names instead of raw palette colors so the look stays
+  consistent and can be adjusted in one place.
+*/
+@theme {
+  /* Surfaces */
+  --color-canvas: #faf8ff; /* page background (faint lavender) */
+  --color-surface: #ffffff; /* cards, sidebar, top bar */
+  --color-surface-muted: #f2f3ff; /* table headers, hover rows, inset panels */
+  --color-line: #c7c4d8; /* card borders */
+  --color-line-soft: #e3e1ec; /* dividers inside cards */
+
+  /* Text */
+  --color-ink: #131b2e; /* primary text */
+  --color-ink-muted: #505f76; /* secondary text */
+  --color-ink-subtle: #6e6c80; /* captions, metadata */
+
+  /* Primary accent (indigo) */
+  --color-primary-50: #eaedff; /* tinted backgrounds */
+  --color-primary-100: #e2dfff; /* chips, active nav */
+  --color-primary-200: #c3c0ff;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5; /* buttons, chart line */
+  --color-primary-700: #3525cd; /* text on tinted backgrounds */
+
+  --shadow-card: 0 1px 2px 0 rgb(19 27 46 / 0.04);
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* Light theme only for now; tells the browser to render form controls light too. */
+:root {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+/* Dimmed backdrop behind the native <dialog> used for modals. */
+dialog::backdrop {
+  background-color: rgb(19 27 46 / 0.4);
+  backdrop-filter: blur(2px);
+}

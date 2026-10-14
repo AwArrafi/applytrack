@@ -218,3 +218,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Python rule "lib/" above would hide the frontend source folder
+!frontend/lib/
