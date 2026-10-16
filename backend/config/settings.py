@@ -15,6 +15,8 @@ from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 
+from .database import database_from_url
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -50,11 +52,18 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-    if host.strip()
-]
+def env_list(name, default=''):
+    """A comma-separated environment variable as a list, e.g. "a.com,b.com"."""
+    return [item.strip() for item in os.environ.get(name, default).split(',') if item.strip()]
+
+
+def env_bool(name, default):
+    return os.environ.get(name, str(default)).lower() == 'true'
+
+
+ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1')
+# Full origins (with https://) allowed to submit forms, e.g. the admin's sign-in, when served on a domain.
+CSRF_TRUSTED_ORIGINS = env_list('DJANGO_CSRF_TRUSTED_ORIGINS')
 
 
 # Application definition
@@ -67,14 +76,22 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
+    'accounts',
     'applications',
 ]
 
+# Sign in with email (accounts/models.py).
+AUTH_USER_MODEL = 'accounts.User'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # Serves the admin's CSS/JS in production, where runserver isn't used.
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     # Picks the language from the Accept-Language header the frontend sends.
     'django.middleware.locale.LocaleMiddleware',
+    'accounts.middleware.UserTimeZoneMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -105,12 +122,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# PostgreSQL in production via DATABASE_URL; the local SQLite file when it's not set.
+DATABASES = {'default': database_from_url(os.environ.get('DATABASE_URL'), BASE_DIR / 'db.sqlite3')}
 
 
 # Password validation
@@ -156,13 +169,76 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+# `manage.py collectstatic` gathers files here for WhiteNoise to serve (compressed).
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage'},
+}
 
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
+# SMTP when EMAIL_HOST is set (any provider: Brevo, Mailgun, Gmail...); otherwise emails are
+# printed to the console, which is fine for development. Production needs EMAIL_HOST, and
+# `manage.py check --deploy` fails without it.
 MAILERS = {
     'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
+        'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
+        'OPTIONS': {
+            'host': os.environ['EMAIL_HOST'],
+            'port': int(os.environ.get('EMAIL_PORT', '587')),
+            'username': os.environ.get('EMAIL_HOST_USER', ''),
+            'password': os.environ.get('EMAIL_HOST_PASSWORD', ''),
+            'use_tls': env_bool('EMAIL_USE_TLS', True),
+        },
+    } if os.environ.get('EMAIL_HOST') else {'BACKEND': 'django.core.mail.backends.console.EmailBackend'},
+}
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'ApplyTrack <no-reply@localhost>')
+
+
+# API: every endpoint needs a signed-in user unless it says otherwise (sign-up and sign-in do).
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'accounts.authentication.ExpiringTokenAuthentication',  # the Next.js frontend
+        'rest_framework.authentication.SessionAuthentication',  # the browsable API, when signed in to the admin
+    ],
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
+    # shortcut: rates are counted in Django's default per-process memory cache; use a shared cache
+    # (e.g. Redis) once the backend runs as more than one process.
+    'DEFAULT_THROTTLE_RATES': {'auth': '10/minute'},
+    # The browsable HTML API is a development tool; production only speaks JSON.
+    'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer']
+    + (['rest_framework.renderers.BrowsableAPIRenderer'] if DEBUG else []),
+}
+
+# How long a sign-in lasts before the user has to sign in again.
+AUTH_TOKEN_TTL_DAYS = int(os.environ.get('AUTH_TOKEN_TTL_DAYS', '30'))
+
+
+# Production hardening, on whenever DEBUG is off. The app runs behind the host's HTTPS proxy,
+# which tells Django the original scheme in X-Forwarded-Proto.
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = env_bool('DJANGO_SECURE_SSL_REDIRECT', True)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # Browsers remember to use HTTPS only. Start lower (e.g. 3600) on a new domain, raise once it works.
+    SECURE_HSTS_SECONDS = int(os.environ.get('DJANGO_HSTS_SECONDS', '31536000'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool('DJANGO_HSTS_INCLUDE_SUBDOMAINS', True)
+    # Joining the browsers' HSTS preload list is hard to undo, so it's a deliberate opt-in.
+    SECURE_HSTS_PRELOAD = env_bool('DJANGO_HSTS_PRELOAD', False)
+    if not SECURE_HSTS_PRELOAD:
+        SILENCED_SYSTEM_CHECKS = ['security.W021']
+
+# Admin at a less guessable path in production, e.g. DJANGO_ADMIN_URL=kelola-7f3a/
+ADMIN_URL = os.environ.get('DJANGO_ADMIN_URL', 'admin/')
+
+# Everything to the console; the host collects it. Errors include the full traceback.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {'console': {'class': 'logging.StreamHandler'}},
+    'root': {'handlers': ['console'], 'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO')},
 }

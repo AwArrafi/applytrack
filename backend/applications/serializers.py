@@ -8,7 +8,7 @@ from .models import Application, Interview
 class ApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
-        fields = '__all__'
+        exclude = ['user']  # always the signed-in user, set by the view
 
     # DRF does not call Model.clean(), so the salary check is repeated here.
     def validate(self, attrs):
@@ -35,3 +35,10 @@ class InterviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Interview
         fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only your own applications can get an interview; anyone else's id reads as "does not exist".
+        request = self.context.get('request')
+        if request is not None:
+            self.fields['application'].queryset = Application.objects.owned_by(request.user)

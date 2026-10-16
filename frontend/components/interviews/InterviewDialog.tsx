@@ -10,14 +10,14 @@ import { Field, inputClass } from "@/components/applications/fields";
 import { useI18n } from "@/components/I18nProvider";
 import { CalendarIcon, CloseIcon } from "@/components/ui/icons";
 import { INTERVIEW_OUTCOMES, INTERVIEW_TYPES } from "@/lib/constants";
-import type { Application, InterviewWithApplication } from "@/lib/types";
+import type { ApplicationChoice, InterviewWithApplication } from "@/lib/types";
 
 const INITIAL_STATE: SaveState = { ok: false, errors: {} };
 
 interface InterviewDialogProps {
   /** null schedules a new interview. */
   interview: InterviewWithApplication | null;
-  applications: Pick<Application, "id" | "company_name" | "job_title">[];
+  applications: ApplicationChoice[];
   /** "YYYY-MM-DD" to start a new interview on. */
   defaultDate: string;
   closeHref: string;

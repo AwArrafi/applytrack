@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { CompanyAvatar } from "@/components/ui/CompanyAvatar";
 import { PencilIcon } from "@/components/ui/icons";
+import { Pager } from "@/components/ui/Pager";
 import { getServerI18n } from "@/lib/i18n/server";
 import type { InterviewOutcome, InterviewWithApplication } from "@/lib/types";
 
@@ -15,11 +16,14 @@ const OUTCOME_STYLES: Record<InterviewOutcome, string> = {
 interface PastInterviewsProps {
   /** Newest first. */
   interviews: InterviewWithApplication[];
+  page: number;
+  pages: number;
+  pageHref: (page: number) => string;
   editHref: (id: number) => string;
 }
 
 /** Interviews that already happened, with their outcome and debrief. */
-export async function PastInterviews({ interviews, editHref }: PastInterviewsProps) {
+export async function PastInterviews({ interviews, page, pages, pageHref, editHref }: PastInterviewsProps) {
   const { t, f } = await getServerI18n();
   return (
     <Card title={t.past.title} description={t.past.description}>
@@ -78,6 +82,9 @@ export async function PastInterviews({ interviews, editHref }: PastInterviewsPro
           })}
         </ul>
       )}
+      <div className="mt-4 empty:hidden">
+        <Pager page={page} pages={pages} href={pageHref} />
+      </div>
     </Card>
   );
 }

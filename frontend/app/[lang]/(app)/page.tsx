@@ -8,8 +8,8 @@ import { BriefcaseIcon, CalendarIcon, ChevronRightIcon, PendingIcon, TrendingUpI
 import { StatCard } from "@/components/ui/StatCard";
 import { Suspense } from "react";
 import { Card } from "@/components/ui/Card";
-import { apiGet } from "@/lib/api";
-import { USER_NAME, WEEKLY_APPLICATION_GOAL } from "@/lib/constants";
+import { apiGet, getCurrentUser } from "@/lib/api";
+import { hourIn } from "@/lib/format";
 import { getServerI18n } from "@/lib/i18n/server";
 import type { DashboardSummary } from "@/lib/types";
 
@@ -17,8 +17,6 @@ export async function generateMetadata() {
   const { t } = await getServerI18n();
   return { title: t.meta.dashboard };
 }
-
-const currentHour = () => new Date().getHours();
 
 export default async function DashboardPage() {
   const { t } = await getServerI18n();
@@ -30,7 +28,11 @@ export default async function DashboardPage() {
 }
 
 async function Dashboard() {
-  const [{ t, f }, summary] = await Promise.all([getServerI18n(), apiGet<DashboardSummary>("/dashboard/")]);
+  const [{ t, f }, summary, user] = await Promise.all([
+    getServerI18n(),
+    apiGet<DashboardSummary>("/dashboard/"),
+    getCurrentUser(),
+  ]);
   const d = t.dashboard;
   const submitted = summary.total_applications - summary.status_counts.wishlist;
   const offerRate = submitted ? Math.round((summary.offer_count / submitted) * 100) : 0;
@@ -48,7 +50,7 @@ async function Dashboard() {
     <div className="space-y-6">
       <header>
         <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight text-ink sm:text-[1.75rem]">
-          {d.greeting(currentHour())}, {USER_NAME.split(" ")[0]}
+          {d.greeting(hourIn(user.time_zone))}, {(user.name || user.email.split("@")[0]).split(" ")[0]}
           <span aria-hidden="true">👋</span>
         </h1>
         <p className="mt-1 text-sm text-ink-muted">
@@ -124,7 +126,7 @@ async function Dashboard() {
               </Link>
             }
           />
-          <WeeklyGoal submitted={summary.applied_last_7_days} goal={WEEKLY_APPLICATION_GOAL} />
+          <WeeklyGoal submitted={summary.applied_last_7_days} goal={user.weekly_goal} />
         </div>
       </div>
     </div>

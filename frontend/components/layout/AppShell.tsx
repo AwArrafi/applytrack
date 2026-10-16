@@ -8,15 +8,16 @@ import { useCallback, useState, type ReactNode } from "react";
 import { AddApplicationDialog } from "@/components/applications/AddApplicationDialog";
 import { Sidebar, type NavCounts } from "./Sidebar";
 import { TopBar } from "./TopBar";
+import type { User } from "@/lib/types";
 
 interface AppShellProps {
   navCounts: Promise<NavCounts | null>;
-  userName: string;
+  user: User;
   children: ReactNode;
 }
 
 /** Page frame shared by every route: sidebar, top bar, and the main content area. */
-export function AppShell({ navCounts, userName, children }: AppShellProps) {
+export function AppShell({ navCounts, user, children }: AppShellProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   // Stable, so the dialog's "close after save" effect runs only when a save finishes.
@@ -26,7 +27,7 @@ export function AppShell({ navCounts, userName, children }: AppShellProps) {
     <div className="min-h-full">
       <Sidebar
         counts={navCounts}
-        userName={userName}
+        user={user}
         mobileOpen={mobileNavOpen}
         onMobileClose={() => setMobileNavOpen(false)}
         onAddApplication={() => setAddOpen(true)}

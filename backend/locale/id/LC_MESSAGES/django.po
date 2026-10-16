@@ -8,3 +8,21 @@ msgstr ""
 
 msgid "Must be at least the minimum salary."
 msgstr "Harus sama dengan atau lebih besar dari gaji minimum."
+
+msgid "An account with this email already exists."
+msgstr "Akun dengan email ini sudah terdaftar."
+
+msgid "Email or password is incorrect."
+msgstr "Email atau kata sandi salah."
+
+msgid "Your session has expired. Please sign in again."
+msgstr "Sesi Anda telah berakhir. Silakan masuk kembali."
+
+msgid "Give both from and to as YYYY-MM-DD dates."
+msgstr "Isi from dan to dengan format tanggal YYYY-MM-DD."
+
+msgid "The date range must run forwards and span at most 62 days."
+msgstr "Rentang tanggal harus maju dan paling panjang 62 hari."
+
+msgid "%(value)s is not a known time zone."
+msgstr "%(value)s bukan zona waktu yang dikenal."

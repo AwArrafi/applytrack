@@ -4,10 +4,12 @@ import { Suspense } from "react";
 import { ApplicationsTable } from "@/components/applications/ApplicationsTable";
 import { Card } from "@/components/ui/Card";
 import { SearchIcon } from "@/components/ui/icons";
-import { apiGet } from "@/lib/api";
+import { Pager } from "@/components/ui/Pager";
+import { apiGet, getCurrentUser } from "@/lib/api";
+import { todayIn } from "@/lib/format";
 import { APPLICATION_STATUSES } from "@/lib/constants";
 import { getServerI18n } from "@/lib/i18n/server";
-import type { Application, ApplicationStatus } from "@/lib/types";
+import type { Application, ApplicationStatus, Paginated } from "@/lib/types";
 
 export async function generateMetadata() {
   const { t } = await getServerI18n();
@@ -20,6 +22,7 @@ interface ApplicationFilters {
   q: string;
   status: ApplicationStatus | "all";
   sort: SortKey;
+  page: number;
 }
 
 // Same sort keys as the Django API.
@@ -39,6 +42,7 @@ function parseFilters(params: SearchParams): ApplicationFilters {
     q: first(params.q),
     status: APPLICATION_STATUSES.includes(status as ApplicationStatus) ? (status as ApplicationStatus) : "all",
     sort: SORT_KEYS.includes(sort as SortKey) ? (sort as SortKey) : "updated",
+    page: Math.max(1, Number.parseInt(first(params.page), 10) || 1),
   };
 }
 
@@ -64,8 +68,11 @@ async function FilteredApplications({ searchParams }: { searchParams: PageProps<
   const filters = parseFilters(await searchParams);
   const query = new URLSearchParams({ q: filters.q, sort: filters.sort });
   if (filters.status !== "all") query.set("status", filters.status);
-  const results = await apiGet<Application[]>(`/applications/?${query}`);
-  const today = new Date().toLocaleDateString("en-CA"); // local date as YYYY-MM-DD
+  const pageHref = (page: number) => `/applications?${query}&page=${page}`;
+  const { count, page, pages, results } = await apiGet<Paginated<Application>>(
+    `/applications/?${query}&page=${filters.page}`,
+  );
+  const today = todayIn((await getCurrentUser()).time_zone);
   const isFiltered = filters.q !== "" || filters.status !== "all";
 
   return (
@@ -118,7 +125,7 @@ async function FilteredApplications({ searchParams }: { searchParams: PageProps<
       </Form>
 
       <p className="px-5 py-3 text-xs text-ink-muted" aria-live="polite">
-        {isFiltered ? t.applications.found(results.length) : t.applications.tracking(results.length)}
+        {isFiltered ? t.applications.found(count) : t.applications.tracking(count)}
       </p>
 
       {results.length === 0 ? (
@@ -126,7 +133,12 @@ async function FilteredApplications({ searchParams }: { searchParams: PageProps<
           {t.applications.noMatch}
         </p>
       ) : (
-        <ApplicationsTable applications={results} today={today} />
+        <>
+          <ApplicationsTable applications={results} today={today} />
+          <div className="border-t border-line-soft px-4 py-3 sm:px-5 empty:hidden">
+            <Pager page={page} pages={pages} href={pageHref} />
+          </div>
+        </>
       )}
     </Card>
   );

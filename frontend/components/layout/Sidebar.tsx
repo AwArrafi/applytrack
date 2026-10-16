@@ -15,8 +15,11 @@ import {
   PlusIcon,
   SettingsIcon,
 } from "@/components/ui/icons";
+import { useFormStatus } from "react-dom";
+import { logout } from "@/app/actions";
 import { switchLocale, useI18n } from "@/components/I18nProvider";
 import { LOCALES, type Dictionary } from "@/lib/i18n";
+import type { User } from "@/lib/types";
 
 export interface NavCounts {
   applications: number;
@@ -37,19 +40,19 @@ const NAV_ITEMS: NavItem[] = [
   { label: "applications", href: "/applications", icon: BriefcaseIcon, count: "applications" },
   { label: "interviews", href: "/interviews", icon: CalendarIcon, count: "upcomingInterviews" },
   { label: "analytics", href: "/analytics", icon: ChartIcon, comingSoon: true },
-  { label: "settings", href: "/settings", icon: SettingsIcon, comingSoon: true },
+  { label: "settings", href: "/settings", icon: SettingsIcon },
 ];
 
 interface SidebarProps {
   /** Streams in from the API; null when it can't be reached. */
   counts: Promise<NavCounts | null>;
-  userName: string;
+  user: User;
   mobileOpen: boolean;
   onMobileClose: () => void;
   onAddApplication: () => void;
 }
 
-export function Sidebar({ counts, userName, mobileOpen, onMobileClose, onAddApplication }: SidebarProps) {
+export function Sidebar({ counts, user, mobileOpen, onMobileClose, onAddApplication }: SidebarProps) {
   const { t } = useI18n();
   // Close the mobile menu with the Escape key.
   useEffect(() => {
@@ -91,7 +94,7 @@ export function Sidebar({ counts, userName, mobileOpen, onMobileClose, onAddAppl
                 <CloseIcon className="size-5" />
               </button>
             </div>
-            <SidebarBody counts={counts} userName={userName} onNavigate={onMobileClose} onAddApplication={addAndClose} />
+            <SidebarBody counts={counts} user={user} onNavigate={onMobileClose} onAddApplication={addAndClose} />
           </div>
         </div>
       )}
@@ -99,7 +102,7 @@ export function Sidebar({ counts, userName, mobileOpen, onMobileClose, onAddAppl
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r border-line bg-surface p-4 lg:flex">
         <Brand />
-        <SidebarBody counts={counts} userName={userName} onAddApplication={onAddApplication} />
+        <SidebarBody counts={counts} user={user} onAddApplication={onAddApplication} />
       </aside>
     </>
   );
@@ -124,14 +127,15 @@ export function Brand() {
 interface SidebarBodyProps {
   /** Streams in from the API; null when it can't be reached. */
   counts: Promise<NavCounts | null>;
-  userName: string;
+  user: User;
   onNavigate?: () => void;
   onAddApplication: () => void;
 }
 
-function SidebarBody({ counts, userName, onNavigate, onAddApplication }: SidebarBodyProps) {
+function SidebarBody({ counts, user, onNavigate, onAddApplication }: SidebarBodyProps) {
   const { t } = useI18n();
-  const initials = userName
+  const displayName = user.name || user.email.split("@")[0];
+  const initials = displayName
     .split(" ")
     .map((part) => part[0])
     .join("")
@@ -160,9 +164,12 @@ function SidebarBody({ counts, userName, onNavigate, onAddApplication }: Sidebar
             {initials}
           </span>
           <span className="min-w-0">
-            <span className="block truncate text-xs font-semibold text-ink">{userName}</span>
-            <span className="block truncate text-xs text-ink-muted">{t.nav.localAccount}</span>
+            <span className="block truncate text-xs font-semibold text-ink">{displayName}</span>
+            <span className="block truncate text-xs text-ink-muted">{user.email}</span>
           </span>
+          <form action={logout} className="ml-auto">
+            <LogoutButton />
+          </form>
         </div>
         <LanguageSwitcher />
       </div>
@@ -254,7 +261,7 @@ function CountBadge({ counts, name }: { counts: Promise<NavCounts | null>; name:
 }
 
 /** ID / EN toggle; the choice is saved in a cookie and applies to every page. */
-function LanguageSwitcher() {
+export function LanguageSwitcher() {
   const { t, locale } = useI18n();
   return (
     <div role="group" aria-label={t.nav.language} className="mt-3 flex items-center justify-between px-1 text-xs">
@@ -273,5 +280,19 @@ function LanguageSwitcher() {
         ))}
       </div>
     </div>
+  );
+}
+
+function LogoutButton() {
+  const { t } = useI18n();
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="rounded-md px-2 py-1 text-xs font-medium text-ink-muted hover:bg-rose-50 hover:text-rose-700 focus-visible:outline-2 focus-visible:outline-primary-600 disabled:opacity-60"
+    >
+      {pending ? t.auth.loggingOut : t.auth.logout}
+    </button>
   );
 }

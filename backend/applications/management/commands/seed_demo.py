@@ -3,6 +3,7 @@ from datetime import datetime, time, timedelta
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
+from accounts.models import User
 from applications.models import Application, Interview
 
 # (company, title, applied days ago or None, status, salary min, max, currency, location,
@@ -44,18 +45,24 @@ INTERVIEWS = [
 
 
 class Command(BaseCommand):
-    help = 'Fill an empty database with sample applications and interviews, dated relative to today.'
+    help = "Give one account sample applications and interviews, dated relative to today."
 
-    def handle(self, *args, **options):
-        if Application.objects.exists():
-            raise CommandError('The database already has applications; seed_demo only fills an empty one.')
+    def add_arguments(self, parser):
+        parser.add_argument('email', help='The account to fill; it must exist and have no applications yet.')
+
+    def handle(self, *args, email, **options):
+        user = User.objects.filter(email=email.lower()).first()
+        if user is None:
+            raise CommandError(f'No account with the email {email}.')
+        if Application.objects.owned_by(user).exists():
+            raise CommandError(f'{email} already has applications; seed_demo only fills an empty account.')
 
         today = timezone.localdate()
         by_company = {}
         for (company, title, applied_ago, status, salary_min, salary_max, currency, location,
              arrangement, updated_ago, notes) in APPLICATIONS:
             app = Application.objects.create(
-                company_name=company, job_title=title, status=status, notes=notes,
+                user=user, company_name=company, job_title=title, status=status, notes=notes,
                 application_date=None if applied_ago is None else today - timedelta(days=applied_ago),
                 salary_min=salary_min, salary_max=salary_max, salary_currency=currency,
                 location=location, work_arrangement=arrangement,

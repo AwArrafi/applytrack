@@ -99,3 +99,25 @@ export interface DashboardSummary {
   /** Oldest week first; the last entry is the current week. */
   weekly_activity: WeeklyActivity[];
 }
+
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  /** Applications per week the dashboard tracks. */
+  weekly_goal: number;
+  /** IANA name, e.g. "Asia/Jakarta"; the API's dates and times are in this zone. */
+  time_zone: string;
+  language: "id" | "en";
+}
+
+/** One page of a paginated list from the API. */
+export interface Paginated<T> {
+  count: number;
+  page: number;
+  pages: number;
+  results: T[];
+}
+
+/** A compact application for dropdowns (GET /applications/choices/). */
+export type ApplicationChoice = Pick<Application, "id" | "company_name" | "job_title">;

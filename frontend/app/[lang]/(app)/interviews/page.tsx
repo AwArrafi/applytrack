@@ -7,11 +7,12 @@ import { PastInterviews } from "@/components/interviews/PastInterviews";
 import { Card } from "@/components/ui/Card";
 import { ChevronRightIcon, PlusIcon } from "@/components/ui/icons";
 import { INTERVIEW_TYPE_STYLES } from "@/components/ui/InterviewTypeBadge";
-import { apiGet } from "@/lib/api";
+import { apiGet, getCurrentUser } from "@/lib/api";
+import { todayIn } from "@/lib/format";
 import { monthGrid, shiftMonth } from "@/lib/calendar";
 import { INTERVIEW_TYPES } from "@/lib/constants";
 import { getServerI18n } from "@/lib/i18n/server";
-import type { Application, InterviewWithApplication } from "@/lib/types";
+import type { ApplicationChoice, InterviewWithApplication, Paginated } from "@/lib/types";
 
 export async function generateMetadata() {
   const { t } = await getServerI18n();
@@ -34,24 +35,30 @@ async function InterviewCalendar({ searchParams }: { searchParams: SearchParams 
   const { t, f } = await getServerI18n();
   const params = await searchParams;
   const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) ?? "";
-  const today = new Date().toLocaleDateString("en-CA"); // local date as YYYY-MM-DD
+  const today = todayIn((await getCurrentUser()).time_zone);
   // The URL is user input: anything that isn't a real month falls back to this month.
   const month = /^\d{4}-(0[1-9]|1[0-2])$/.test(first(params.month)) ? first(params.month) : today.slice(0, 7);
 
-  // shortcut: loads every interview, fine for one person's job search; add date filters to the API past a few hundred.
-  const [interviews, applications] = await Promise.all([
-    apiGet<InterviewWithApplication[]>("/interviews/"),
-    apiGet<Application[]>("/applications/?sort=company"),
+  const pastPage = Math.max(1, Number.parseInt(first(params.past_page), 10) || 1);
+  const editId = first(params.edit);
+  const weeks = monthGrid(month);
+
+  // Only what this page shows: the visible weeks, the next 7 days, one page of history.
+  const [monthInterviews, nextDays, upcoming, past, applications, editing] = await Promise.all([
+    apiGet<InterviewWithApplication[]>(`/interviews/?from=${weeks[0][0].date}&to=${weeks.at(-1)![6].date}`),
+    apiGet<InterviewWithApplication[]>(`/interviews/?from=${today}&to=${shiftDate(today, 6)}`),
+    apiGet<Paginated<InterviewWithApplication>>("/interviews/?when=upcoming&page_size=1"), // just the count
+    apiGet<Paginated<InterviewWithApplication>>(`/interviews/?when=past&page_size=10&page=${pastPage}`),
+    apiGet<ApplicationChoice[]>("/applications/choices/"),
+    /^\d+$/.test(editId) ? apiGet<InterviewWithApplication>(`/interviews/${editId}/`) : null,
   ]);
 
-  const { upcoming, nextSevenDays, past, byDate } = groupInterviews(interviews, today);
-
-  const href = (extra: Record<string, string> = {}) => `/interviews?${new URLSearchParams({ month, ...extra })}`;
+  // Links keep the month and the history page, so opening and closing a form doesn't lose your place.
+  const base = { month, ...(pastPage > 1 ? { past_page: String(pastPage) } : {}) };
+  const href = (extra: Record<string, string> = {}) => `/interviews?${new URLSearchParams({ ...base, ...extra })}`;
   const editHref = (id: number) => href({ edit: String(id) });
   const scheduleHref = (date: string) => href({ schedule: date });
-
-  const editId = Number(first(params.edit));
-  const editing = interviews.find((i) => i.id === editId) ?? null;
+  const pastPageHref = (page: number) => href({ past_page: String(page) });
   const schedule = first(params.schedule);
   const scheduleDate = /^\d{4}-\d{2}-\d{2}$/.test(schedule) ? schedule : today;
 
@@ -112,13 +119,13 @@ async function InterviewCalendar({ searchParams }: { searchParams: SearchParams 
 
       <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-12">
         <div className="space-y-6 xl:col-span-8">
-          <MonthCalendar weeks={monthGrid(month)} byDate={byDate} today={today} editHref={editHref} scheduleHref={scheduleHref} />
-          <PastInterviews interviews={past} editHref={editHref} />
+          <MonthCalendar weeks={weeks} byDate={groupByDate(monthInterviews)} today={today} editHref={editHref} scheduleHref={scheduleHref} />
+          <PastInterviews interviews={past.results} page={past.page} pages={past.pages} pageHref={pastPageHref} editHref={editHref} />
         </div>
         <div className="xl:col-span-4">
           <UpcomingInterviews
-            interviews={nextSevenDays}
-            totalUpcoming={upcoming.length}
+            interviews={notStartedYet(nextDays)}
+            totalUpcoming={upcoming.count}
             today={today}
             editHref={editHref}
             action={<span className="font-mono text-[11px] text-ink-muted">{t.upcoming.nextSevenDays}</span>}
@@ -140,22 +147,20 @@ async function InterviewCalendar({ searchParams }: { searchParams: SearchParams 
   );
 }
 
-/** Splits interviews (sorted soonest first by the API) into upcoming and past, and by calendar day. */
-function groupInterviews(interviews: InterviewWithApplication[], today: string) {
-  const now = Date.now();
-  const weekAhead = shiftDate(today, 7);
-  const upcoming = interviews.filter((i) => Date.parse(i.scheduled_at) >= now);
+/** Interviews per calendar day ("YYYY-MM-DD" in the backend's time zone). */
+function groupByDate(interviews: InterviewWithApplication[]) {
   const byDate = new Map<string, InterviewWithApplication[]>();
   for (const interview of interviews) {
-    const date = interview.scheduled_at.slice(0, 10); // the backend's local date
+    const date = interview.scheduled_at.slice(0, 10);
     byDate.set(date, [...(byDate.get(date) ?? []), interview]);
   }
-  return {
-    upcoming,
-    nextSevenDays: upcoming.filter((i) => i.scheduled_at.slice(0, 10) < weekAhead),
-    past: interviews.filter((i) => Date.parse(i.scheduled_at) < now).reverse(), // newest first
-    byDate,
-  };
+  return byDate;
+}
+
+/** Drops today's interviews that already happened (the 7-day range starts at midnight). */
+function notStartedYet(interviews: InterviewWithApplication[]) {
+  const now = Date.now();
+  return interviews.filter((i) => Date.parse(i.scheduled_at) >= now);
 }
 
 /** Adds days to a YYYY-MM-DD string without touching time zones. */

@@ -79,6 +79,16 @@ function buildFormatters(locale: FormatLocale) {
   };
 }
 
+/** Today's date ("YYYY-MM-DD") in a time zone, e.g. the user's. */
+export function todayIn(timeZone: string): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone });
+}
+
+/** The current hour (0–23) in a time zone, for greetings. */
+export function hourIn(timeZone: string): number {
+  return Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone }).format(new Date()));
+}
+
 const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 /** Whole days from `from` to `to` (both ISO dates or datetimes; time of day is ignored). */

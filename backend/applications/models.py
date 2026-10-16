@@ -1,6 +1,19 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
+from django.db import models, transaction
+from django.utils import timezone
+
+
+# Every query for user data goes through owned_by(), so one user never sees another's.
+class ApplicationQuerySet(models.QuerySet):
+    def owned_by(self, user):
+        return self.filter(user=user)
+
+
+class InterviewQuerySet(models.QuerySet):
+    def owned_by(self, user):
+        return self.filter(application__user=user)
 
 
 # Field names and choice values mirror frontend/lib/types.ts, so the frontend
@@ -20,6 +33,7 @@ class Application(models.Model):
         HYBRID = 'hybrid', 'Hybrid'
         REMOTE = 'remote', 'Remote'
 
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='applications')
     company_name = models.CharField(max_length=200)
     job_title = models.CharField(max_length=200)
     job_description = models.TextField(blank=True)
@@ -38,11 +52,25 @@ class Application(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    objects = ApplicationQuerySet.as_manager()
+
     class Meta:
         ordering = ['-updated_at']
+        # The applications list and dashboard read "this user's, newest first".
+        indexes = [models.Index(fields=['user', '-updated_at'])]
 
     def __str__(self):
         return f'{self.job_title} at {self.company_name}'
+
+    def save(self, *args, **kwargs):
+        """Saves, and records a StatusChange whenever the status is new or different."""
+        with transaction.atomic():
+            previous = None if self._state.adding else (
+                Application.objects.filter(pk=self.pk).values_list('status', flat=True).first()
+            )
+            super().save(*args, **kwargs)
+            if previous != self.status:
+                StatusChange.objects.create(application=self, from_status=previous or '', to_status=self.status)
 
     def clean(self):
         if (
@@ -51,6 +79,22 @@ class Application(models.Model):
             and self.salary_min > self.salary_max
         ):
             raise ValidationError({'salary_max': 'Must be at least the minimum salary.'})
+
+
+class StatusChange(models.Model):
+    """History of an application's status, for analytics such as "days until a reply"."""
+
+    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='status_changes')
+    # Empty for the first entry, when the application was created.
+    from_status = models.CharField(max_length=20, choices=Application.Status, blank=True)
+    to_status = models.CharField(max_length=20, choices=Application.Status)
+    changed_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        ordering = ['changed_at']
+
+    def __str__(self):
+        return f'{self.application}: {self.from_status or "new"} -> {self.to_status}'
 
 
 class Interview(models.Model):
@@ -89,6 +133,8 @@ class Interview(models.Model):
         null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
     debrief_notes = models.TextField(blank=True)
+
+    objects = InterviewQuerySet.as_manager()
 
     class Meta:
         ordering = ['scheduled_at']

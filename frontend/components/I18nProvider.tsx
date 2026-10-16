@@ -3,7 +3,8 @@
 // Gives Client Components the current language. Server Components use getServerI18n() instead.
 
 import { createContext, useContext, type ReactNode } from "react";
-import { DEFAULT_LOCALE, getI18n, LOCALE_COOKIE, type Locale } from "@/lib/i18n";
+import { setLanguage } from "@/app/actions";
+import { DEFAULT_LOCALE, getI18n, type Locale } from "@/lib/i18n";
 
 const LocaleContext = createContext<Locale>(DEFAULT_LOCALE);
 
@@ -15,8 +16,8 @@ export function useI18n() {
   return getI18n(useContext(LocaleContext));
 }
 
-/** Saves the choice for a year and reloads, so every page (and the API's messages) switch language. */
-export function switchLocale(locale: Locale) {
-  document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=31536000; samesite=lax`;
+/** Saves the choice (cookie, and the account when signed in), then reloads so every page switches. */
+export async function switchLocale(locale: Locale) {
+  await setLanguage(locale);
   window.location.reload();
 }
