@@ -1,0 +1,10 @@
+# Indonesian translations for ApplyTrack's own messages. Django and DRF ship their
+# own translations for built-in messages ("This field may not be blank." etc).
+# After editing: python manage.py compilemessages
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: id\n"
+
+msgid "Must be at least the minimum salary."
+msgstr "Harus sama dengan atau lebih besar dari gaji minimum."

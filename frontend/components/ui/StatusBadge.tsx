@@ -1,4 +1,4 @@
-import { STATUS_LABELS } from "@/lib/constants";
+import { getServerI18n } from "@/lib/i18n/server";
 import type { ApplicationStatus } from "@/lib/types";
 
 // Each status has its own color, but the text label is always shown too,
@@ -14,14 +14,15 @@ export const STATUS_STYLES: Record<ApplicationStatus, { badge: string; dot: stri
   withdrawn: { badge: "bg-zinc-100 text-zinc-600 ring-zinc-200", dot: "bg-zinc-300", chart: "#d4d4d8" },
 };
 
-export function StatusBadge({ status }: { status: ApplicationStatus }) {
+export async function StatusBadge({ status }: { status: ApplicationStatus }) {
+  const { t } = await getServerI18n();
   const style = STATUS_STYLES[status];
   return (
     <span
       className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${style.badge}`}
     >
       <span className={`size-1.5 rounded-full ${style.dot}`} aria-hidden="true" />
-      {STATUS_LABELS[status]}
+      {t.status[status]}
     </span>
   );
 }

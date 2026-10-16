@@ -14,12 +14,16 @@ export type ApplicationStatus =
 export type WorkArrangement = "onsite" | "hybrid" | "remote";
 
 export type InterviewType =
-  | "phone_screen"
-  | "technical"
-  | "behavioral"
-  | "onsite"
-  | "final"
+  | "hr_interview"
+  | "user_interview"
+  | "skills_test"
+  | "psychotest"
+  | "group_discussion"
+  | "final_interview"
+  | "medical_checkup"
   | "other";
+
+export type InterviewOutcome = "awaiting" | "passed" | "not_selected" | "cancelled";
 
 export interface Application {
   id: number;
@@ -51,9 +55,16 @@ export interface Interview {
   location: string;
   meeting_url: string;
   preparation_notes: string;
+  /** e.g. "Alex Chen, Staff Engineer" */
+  interviewer: string;
+  /** Debrief, filled in after the interview. */
+  outcome: InterviewOutcome;
+  /** 1–5, how well you think it went. */
+  self_score: number | null;
+  debrief_notes: string;
 }
 
-/** An interview together with the application it belongs to, for display. */
+/** An interview as the API returns it: with its application's company and role. */
 export interface InterviewWithApplication extends Interview {
   company_name: string;
   job_title: string;

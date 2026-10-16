@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
@@ -53,13 +54,23 @@ class Application(models.Model):
 
 
 class Interview(models.Model):
+    # Recruitment stages as they're commonly named in Indonesia; the frontend shows the
+    # translated label, these are only the stored codes and admin labels.
     class Type(models.TextChoices):
-        PHONE_SCREEN = 'phone_screen', 'Phone screen'
-        TECHNICAL = 'technical', 'Technical'
-        BEHAVIORAL = 'behavioral', 'Behavioral'
-        ONSITE = 'onsite', 'On-site'
-        FINAL = 'final', 'Final round'
+        HR_INTERVIEW = 'hr_interview', 'HR interview'
+        USER_INTERVIEW = 'user_interview', 'Interview with the hiring manager (user)'
+        SKILLS_TEST = 'skills_test', 'Skills test / case study'
+        PSYCHOTEST = 'psychotest', 'Psychological test'
+        GROUP_DISCUSSION = 'group_discussion', 'Group discussion (FGD)'
+        FINAL_INTERVIEW = 'final_interview', 'Final interview'
+        MEDICAL_CHECKUP = 'medical_checkup', 'Medical check-up'
         OTHER = 'other', 'Other'
+
+    class Outcome(models.TextChoices):
+        AWAITING = 'awaiting', 'Awaiting feedback'
+        PASSED = 'passed', 'Passed'
+        NOT_SELECTED = 'not_selected', 'Not selected'
+        CANCELLED = 'cancelled', 'Cancelled'
 
     application = models.ForeignKey(
         Application, on_delete=models.CASCADE, related_name='interviews'
@@ -70,6 +81,14 @@ class Interview(models.Model):
     location = models.CharField(max_length=200, blank=True)
     meeting_url = models.URLField(max_length=500, blank=True)
     preparation_notes = models.TextField(blank=True)
+    # Who you're meeting, e.g. "Alex Chen, Staff Engineer".
+    interviewer = models.CharField(max_length=200, blank=True)
+    # Debrief, filled in after the interview.
+    outcome = models.CharField(max_length=20, choices=Outcome, default=Outcome.AWAITING)
+    self_score = models.PositiveSmallIntegerField(
+        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    debrief_notes = models.TextField(blank=True)
 
     class Meta:
         ordering = ['scheduled_at']

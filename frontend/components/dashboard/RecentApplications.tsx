@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
+import { EditApplicationLink } from "@/components/applications/EditApplicationLink";
 import { CompanyAvatar } from "@/components/ui/CompanyAvatar";
 import { ChevronRightIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { WORK_ARRANGEMENT_LABELS } from "@/lib/constants";
-import { formatDaysAgo } from "@/lib/format";
+import { getServerI18n } from "@/lib/i18n/server";
 import type { Application } from "@/lib/types";
 
 interface RecentApplicationsProps {
@@ -14,62 +14,68 @@ interface RecentApplicationsProps {
 }
 
 /** The most recently updated applications. Less important columns hide on small screens. */
-export function RecentApplications({ applications, today }: RecentApplicationsProps) {
+export async function RecentApplications({ applications, today }: RecentApplicationsProps) {
+  const { t, f } = await getServerI18n();
   return (
     <Card
-      title="Recent Applications"
-      description="Latest updates across your pipeline"
+      title={t.recent.title}
+      description={t.recent.description}
       padded={false}
       action={
         <Link
           href="/applications"
           className="flex shrink-0 items-center gap-0.5 rounded text-xs font-medium text-primary-700 hover:text-primary-600 focus-visible:outline-2 focus-visible:outline-primary-600"
         >
-          View all
+          {t.common.viewAll}
           <ChevronRightIcon className="size-4" />
         </Link>
       }
     >
       {applications.length === 0 ? (
         <p className="px-5 py-10 text-center text-sm text-ink-muted">
-          No applications yet. Your latest activity will appear here.
+          {t.recent.empty}
         </p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <caption className="sr-only">Recently updated job applications</caption>
+            <caption className="sr-only">{t.recent.caption}</caption>
             <thead className="border-b border-line-soft bg-surface-muted text-[11px] uppercase tracking-wider text-ink-muted">
               <tr>
-                <th scope="col" className="px-5 py-3 font-semibold">Company &amp; Role</th>
-                <th scope="col" className="hidden px-4 py-3 font-semibold sm:table-cell">Applied</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Status</th>
-                <th scope="col" className="hidden px-4 py-3 font-semibold md:table-cell">Work</th>
+                <th scope="col" className="px-4 py-3 font-semibold sm:px-5">{t.common.companyAndRole}</th>
+                <th scope="col" className="hidden px-4 py-3 font-semibold sm:table-cell">{t.common.applied}</th>
+                <th scope="col" className="px-2 py-3 font-semibold sm:px-4">{t.common.status}</th>
+                <th scope="col" className="py-3 pl-2 pr-4 text-right font-semibold sm:px-4">
+                  <span className="sr-only">{t.common.actions}</span>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line-soft">
               {applications.map((app) => (
                 <tr key={app.id} className="transition-colors hover:bg-surface-muted/60">
-                  <td className="px-5 py-3.5">
+                  <td className="px-4 py-3.5 sm:px-5">
                     <div className="flex items-center gap-3">
-                      <CompanyAvatar name={app.company_name} />
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-ink">{app.company_name}</p>
-                        <p className="max-w-56 truncate text-ink-muted">{app.job_title}</p>
+                      <CompanyAvatar name={app.company_name} className="max-sm:hidden" />
+                      <div className="min-w-0 max-w-32 sm:max-w-36">
+                        <Link
+                      href={`/applications/${app.id}`}
+                      className="block truncate rounded text-sm font-semibold text-ink hover:text-primary-700 hover:underline focus-visible:outline-2 focus-visible:outline-primary-600"
+                    >
+                      {app.company_name}
+                    </Link>
+                        <p className="truncate text-ink-muted">{app.job_title}</p>
                       </div>
                     </div>
                   </td>
                   <td className="hidden whitespace-nowrap px-4 py-3.5 text-ink-muted sm:table-cell">
-                    {app.application_date ? formatDaysAgo(app.application_date, today) : "Not applied"}
+                    {app.application_date ? f.daysAgo(app.application_date, today) : t.common.notApplied}
                   </td>
-                  <td className="px-4 py-3.5">
+                  <td className="px-2 py-3.5 sm:px-4">
                     <StatusBadge status={app.status} />
                   </td>
-                  <td className="hidden px-4 py-3.5 md:table-cell">
-                    <span className="rounded border border-line bg-surface-muted px-2 py-0.5 font-mono text-[11px] text-ink-muted">
-                      {WORK_ARRANGEMENT_LABELS[app.work_arrangement]}
-                    </span>
-                  </td>
-                </tr>
+                  <td className="py-3.5 pl-2 pr-4 text-right sm:px-4">
+                  <EditApplicationLink application={app} />
+                </td>
+              </tr>
               ))}
             </tbody>
           </table>

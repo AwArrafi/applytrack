@@ -9,11 +9,11 @@ const AVATAR_COLORS = [
   "bg-amber-50 text-amber-700",
 ];
 
-export function CompanyAvatar({ name }: { name: string }) {
+export function CompanyAvatar({ name, className = "" }: { name: string; className?: string }) {
   const hash = [...name].reduce((sum, char) => sum + char.charCodeAt(0), 0);
   return (
     <span
-      className={`flex size-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${AVATAR_COLORS[hash % AVATAR_COLORS.length]}`}
+      className={`${className} flex size-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${AVATAR_COLORS[hash % AVATAR_COLORS.length]}`}
       aria-hidden="true"
     >
       {name[0]}

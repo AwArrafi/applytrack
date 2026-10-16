@@ -1,115 +1,128 @@
+import Link from "next/link";
 import { ActivityChart } from "@/components/dashboard/ActivityChart";
 import { RecentApplications } from "@/components/dashboard/RecentApplications";
 import { StatusBreakdown } from "@/components/dashboard/StatusBreakdown";
 import { UpcomingInterviews } from "@/components/dashboard/UpcomingInterviews";
 import { WeeklyGoal } from "@/components/dashboard/WeeklyGoal";
-import { BriefcaseIcon, CalendarIcon, PendingIcon, TrendingUpIcon, TrophyIcon } from "@/components/ui/icons";
+import { BriefcaseIcon, CalendarIcon, ChevronRightIcon, PendingIcon, TrendingUpIcon, TrophyIcon } from "@/components/ui/icons";
 import { StatCard } from "@/components/ui/StatCard";
 import { Suspense } from "react";
 import { Card } from "@/components/ui/Card";
 import { apiGet } from "@/lib/api";
 import { USER_NAME, WEEKLY_APPLICATION_GOAL } from "@/lib/constants";
-import { formatTime, formatUpcomingDay } from "@/lib/format";
+import { getServerI18n } from "@/lib/i18n/server";
 import type { DashboardSummary } from "@/lib/types";
 
-function greeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
+export async function generateMetadata() {
+  const { t } = await getServerI18n();
+  return { title: t.meta.dashboard };
 }
 
-export default function DashboardPage() {
+const currentHour = () => new Date().getHours();
+
+export default async function DashboardPage() {
+  const { t } = await getServerI18n();
   return (
-    <Suspense fallback={<Card><p className="py-16 text-center text-sm text-ink-muted">Loading your dashboard…</p></Card>}>
+    <Suspense fallback={<Card><p className="py-16 text-center text-sm text-ink-muted">{t.dashboard.loading}</p></Card>}>
       <Dashboard />
     </Suspense>
   );
 }
 
 async function Dashboard() {
-  const summary = await apiGet<DashboardSummary>("/dashboard/");
+  const [{ t, f }, summary] = await Promise.all([getServerI18n(), apiGet<DashboardSummary>("/dashboard/")]);
+  const d = t.dashboard;
   const submitted = summary.total_applications - summary.status_counts.wishlist;
   const offerRate = submitted ? Math.round((summary.offer_count / submitted) * 100) : 0;
 
   const next = summary.upcoming_interviews[0];
-  const nextDay = next && formatUpcomingDay(next.scheduled_at, summary.today);
-  const nextHint = next
-    ? `Next: ${next.company_name} ${nextDay === "Today" || nextDay === "Tomorrow" ? nextDay.toLowerCase() : nextDay} ${formatTime(next.scheduled_at)}`
-    : "Nothing scheduled yet";
+  let nextHint = d.nothingScheduled;
+  if (next) {
+    const day = f.upcomingDay(next.scheduled_at, summary.today);
+    // "today"/"tomorrow" read naturally in lowercase mid-sentence; weekday names keep their capital.
+    const isRelative = Date.parse(next.scheduled_at.slice(0, 10)) - Date.parse(summary.today) <= 86_400_000;
+    nextHint = d.nextInterview(next.company_name, isRelative ? day.toLowerCase() : day, f.time(next.scheduled_at));
+  }
 
   return (
     <div className="space-y-6">
       <header>
         <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight text-ink sm:text-[1.75rem]">
-          {greeting()}, {USER_NAME.split(" ")[0]}
+          {d.greeting(currentHour())}, {USER_NAME.split(" ")[0]}
           <span aria-hidden="true">👋</span>
         </h1>
         <p className="mt-1 text-sm text-ink-muted">
-          Here&apos;s an overview of your job search pipeline. You have{" "}
-          <span className="font-semibold text-primary-700">
-            {summary.interviews_this_week} {summary.interviews_this_week === 1 ? "interview" : "interviews"}
-          </span>{" "}
-          coming up this week.
+          {d.introLead}{" "}
+          <span className="font-semibold text-primary-700">{d.interviewCount(summary.interviews_this_week)}</span>{" "}
+          {d.introTail}
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <StatCard
-          label="Total Applications"
+          label={d.totalApplications}
           value={summary.total_applications}
           icon={BriefcaseIcon}
           tone="primary"
           chip={
             <>
-              <TrendingUpIcon className="size-3.5" />+{summary.applied_last_7_days} this week
+              <TrendingUpIcon className="size-3.5" />{d.thisWeek(summary.applied_last_7_days)}
             </>
           }
-          hint={`Including ${summary.status_counts.wishlist} on your wishlist`}
+          hint={d.savedIncluded(summary.status_counts.wishlist)}
         />
         <StatCard
-          label="In Progress"
+          label={d.inProgress}
           value={summary.active_applications}
           icon={PendingIcon}
           tone="blue"
           chip={
             <>
               <span className="size-1.5 rounded-full bg-blue-600" aria-hidden="true" />
-              Active
+              {d.active}
             </>
           }
-          hint={`Across ${summary.active_company_count} companies`}
+          hint={d.acrossCompanies(summary.active_company_count)}
         />
         <StatCard
-          label="Interviews"
+          label={d.interviews}
           value={summary.upcoming_interview_count}
           icon={CalendarIcon}
           tone="amber"
-          chip={`${summary.interviews_this_week} this week`}
+          chip={d.interviewsThisWeek(summary.interviews_this_week)}
           hint={nextHint}
         />
         <StatCard
-          label="Offers Received"
+          label={d.offers}
           value={summary.offer_count}
           icon={TrophyIcon}
           tone="emerald"
-          chip={`${offerRate}% offer rate`}
-          hint={`${summary.response_rate}% response rate`}
+          chip={d.offerRate(offerRate)}
+          hint={d.responseRate(summary.response_rate)}
         />
       </div>
 
-      {/* 7 : 5 split on large screens, as in the design. */}
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-        <div className="space-y-6 lg:col-span-7">
+      {/* 7 : 5 split on wide screens, as in the design; stacked below that so the tables keep room. */}
+      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-12">
+        <div className="space-y-6 xl:col-span-7">
           <ActivityChart weeks={summary.weekly_activity} />
           <RecentApplications applications={summary.recent_applications} today={summary.today} />
         </div>
-        <div className="space-y-6 lg:col-span-5">
+        <div className="space-y-6 xl:col-span-5">
           <StatusBreakdown counts={summary.status_counts} total={summary.total_applications} />
           <UpcomingInterviews
             interviews={summary.upcoming_interviews.slice(0, 3)}
             totalUpcoming={summary.upcoming_interview_count}
             today={summary.today}
+            action={
+              <Link
+                href="/interviews"
+                className="flex shrink-0 items-center gap-0.5 rounded text-xs font-medium text-primary-700 hover:text-primary-600 focus-visible:outline-2 focus-visible:outline-primary-600"
+              >
+                {d.viewCalendar}
+                <ChevronRightIcon className="size-4" />
+              </Link>
+            }
           />
           <WeeklyGoal submitted={summary.applied_last_7_days} goal={WEEKLY_APPLICATION_GOAL} />
         </div>

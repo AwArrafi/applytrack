@@ -15,6 +15,8 @@ import {
   PlusIcon,
   SettingsIcon,
 } from "@/components/ui/icons";
+import { switchLocale, useI18n } from "@/components/I18nProvider";
+import { LOCALES, type Dictionary } from "@/lib/i18n";
 
 export interface NavCounts {
   applications: number;
@@ -22,7 +24,7 @@ export interface NavCounts {
 }
 
 interface NavItem {
-  label: string;
+  label: keyof Dictionary["nav"];
   href: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   count?: keyof NavCounts;
@@ -31,11 +33,11 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Overview", href: "/", icon: DashboardIcon },
-  { label: "Applications", href: "/applications", icon: BriefcaseIcon, count: "applications" },
-  { label: "Interview Calendar", href: "/interviews", icon: CalendarIcon, count: "upcomingInterviews", comingSoon: true },
-  { label: "Analytics", href: "/analytics", icon: ChartIcon, comingSoon: true },
-  { label: "Settings", href: "/settings", icon: SettingsIcon, comingSoon: true },
+  { label: "overview", href: "/", icon: DashboardIcon },
+  { label: "applications", href: "/applications", icon: BriefcaseIcon, count: "applications" },
+  { label: "interviews", href: "/interviews", icon: CalendarIcon, count: "upcomingInterviews" },
+  { label: "analytics", href: "/analytics", icon: ChartIcon, comingSoon: true },
+  { label: "settings", href: "/settings", icon: SettingsIcon, comingSoon: true },
 ];
 
 interface SidebarProps {
@@ -48,6 +50,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ counts, userName, mobileOpen, onMobileClose, onAddApplication }: SidebarProps) {
+  const { t } = useI18n();
   // Close the mobile menu with the Escape key.
   useEffect(() => {
     if (!mobileOpen) return;
@@ -73,7 +76,7 @@ export function Sidebar({ counts, userName, mobileOpen, onMobileClose, onAddAppl
             id="mobile-navigation"
             role="dialog"
             aria-modal="true"
-            aria-label="Navigation"
+            aria-label={t.nav.navigation}
             className="relative flex h-full w-72 max-w-[80%] flex-col bg-surface p-4 shadow-xl"
           >
             <div className="flex items-center justify-between">
@@ -81,7 +84,7 @@ export function Sidebar({ counts, userName, mobileOpen, onMobileClose, onAddAppl
               <button
                 type="button"
                 onClick={onMobileClose}
-                aria-label="Close navigation menu"
+                aria-label={t.nav.closeMenu}
                 autoFocus
                 className="rounded-lg p-1.5 text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-primary-600"
               >
@@ -103,6 +106,7 @@ export function Sidebar({ counts, userName, mobileOpen, onMobileClose, onAddAppl
 }
 
 export function Brand() {
+  const { t } = useI18n();
   return (
     <Link
       href="/"
@@ -111,7 +115,7 @@ export function Brand() {
       <LogoMark className="size-9 text-primary-600" />
       <span className="flex flex-col leading-tight">
         <span className="font-semibold tracking-tight text-ink">ApplyTrack</span>
-        <span className="text-xs text-ink-muted">Career Pipeline</span>
+        <span className="text-xs text-ink-muted">{t.nav.tagline}</span>
       </span>
     </Link>
   );
@@ -126,6 +130,7 @@ interface SidebarBodyProps {
 }
 
 function SidebarBody({ counts, userName, onNavigate, onAddApplication }: SidebarBodyProps) {
+  const { t } = useI18n();
   const initials = userName
     .split(" ")
     .map((part) => part[0])
@@ -141,7 +146,7 @@ function SidebarBody({ counts, userName, onNavigate, onAddApplication }: Sidebar
         className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 active:scale-[0.98]"
       >
         <PlusIcon className="size-4" />
-        Add Application
+        {t.common.addApplication}
       </button>
 
       <NavLinks counts={counts} onNavigate={onNavigate} />
@@ -156,23 +161,43 @@ function SidebarBody({ counts, userName, onNavigate, onAddApplication }: Sidebar
           </span>
           <span className="min-w-0">
             <span className="block truncate text-xs font-semibold text-ink">{userName}</span>
-            <span className="block truncate text-xs text-ink-muted">Local account</span>
+            <span className="block truncate text-xs text-ink-muted">{t.nav.localAccount}</span>
           </span>
         </div>
+        <LanguageSwitcher />
       </div>
     </div>
   );
 }
 
-function NavLinks({ counts, onNavigate }: { counts: Promise<NavCounts | null>; onNavigate?: () => void }) {
-  const pathname = usePathname();
+interface NavLinksProps {
+  counts: Promise<NavCounts | null>;
+  onNavigate?: () => void;
+}
+
+// usePathname() can't be known while prerendering pages like /applications/[id],
+// so the links render without a highlight until the URL is available.
+function NavLinks(props: NavLinksProps) {
+  return (
+    <Suspense fallback={<NavList {...props} pathname={null} />}>
+      <CurrentNavList {...props} />
+    </Suspense>
+  );
+}
+
+function CurrentNavList(props: NavLinksProps) {
+  return <NavList {...props} pathname={usePathname()} />;
+}
+
+function NavList({ counts, onNavigate, pathname }: NavLinksProps & { pathname: string | null }) {
+  const { t } = useI18n();
 
   return (
-    <nav aria-label="Main" className="mt-6">
+    <nav aria-label={t.nav.main} className="mt-6">
       <ul className="space-y-1">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
-          const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          const isActive = item.href === "/" ? pathname === "/" : !!pathname?.startsWith(item.href);
           const base = "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium";
           const badge = item.count && (
             <Suspense fallback={null}>
@@ -183,9 +208,9 @@ function NavLinks({ counts, onNavigate }: { counts: Promise<NavCounts | null>; o
           if (item.comingSoon) {
             return (
               <li key={item.href}>
-                <span aria-disabled="true" title="Coming soon" className={`${base} cursor-not-allowed text-ink-muted/70`}>
+                <span aria-disabled="true" title={t.nav.comingSoon} className={`${base} cursor-not-allowed text-ink-muted/70`}>
                   <Icon className="size-5 shrink-0" />
-                  {item.label}
+                  {t.nav[item.label]}
                   {badge}
                 </span>
               </li>
@@ -203,7 +228,7 @@ function NavLinks({ counts, onNavigate }: { counts: Promise<NavCounts | null>; o
                 }`}
               >
                 <Icon className="size-5 shrink-0" />
-                {item.label}
+                {t.nav[item.label]}
                 {badge}
               </Link>
             </li>
@@ -225,5 +250,28 @@ function CountBadge({ counts, name }: { counts: Promise<NavCounts | null>; name:
     >
       {value}
     </span>
+  );
+}
+
+/** ID / EN toggle; the choice is saved in a cookie and applies to every page. */
+function LanguageSwitcher() {
+  const { t, locale } = useI18n();
+  return (
+    <div role="group" aria-label={t.nav.language} className="mt-3 flex items-center justify-between px-1 text-xs">
+      <span className="text-ink-muted">{t.nav.language}</span>
+      <div className="flex rounded-lg border border-line p-0.5">
+        {LOCALES.map((option) => (
+          <button
+            key={option}
+            type="button"
+            onClick={() => option !== locale && switchLocale(option)}
+            aria-pressed={option === locale}
+            className="rounded-md px-2 py-0.5 font-semibold uppercase text-ink-muted aria-pressed:bg-primary-600 aria-pressed:text-white focus-visible:outline-2 focus-visible:outline-primary-600"
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

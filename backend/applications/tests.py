@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta, timezone as dt_timezone
 
+from django.test import override_settings
 from django.utils import timezone
 
 from rest_framework.test import APITestCase
@@ -81,6 +82,19 @@ class ApplicationApiTests(APITestCase):
             with self.subTest(payload=payload):
                 self.assertEqual(self.client.post('/api/applications/', payload, format='json').status_code, 400)
 
+    def test_error_messages_follow_accept_language(self):
+        def errors(payload, **headers):
+            return self.client.post('/api/applications/', payload, format='json', **headers).json()
+
+        salary = {'company_name': 'X', 'job_title': 'Y', 'salary_min': 200, 'salary_max': 100}
+        blank = {'company_name': '', 'job_title': 'Y'}
+        # Indonesian is the default.
+        self.assertEqual(errors(salary)['salary_max'], ['Harus sama dengan atau lebih besar dari gaji minimum.'])
+        self.assertNotIn('blank', errors(blank)['company_name'][0])
+        en = {'HTTP_ACCEPT_LANGUAGE': 'en'}
+        self.assertEqual(errors(salary, **en)['salary_max'], ['Must be at least the minimum salary.'])
+        self.assertEqual(errors(blank, **en)['company_name'], ['This field may not be blank.'])
+
     def test_partial_update_checks_salary_against_stored_value(self):
         self.stripe.salary_max = 100
         self.stripe.save()
@@ -93,6 +107,7 @@ class ApplicationApiTests(APITestCase):
         self.assertFalse(Interview.objects.exists())
 
 
+@override_settings(TIME_ZONE='Asia/Jakarta')  # assertions below expect +07:00
 class InterviewApiTests(APITestCase):
     def test_list_soonest_first_with_company_and_filter_by_application(self):
         stripe = make_application(company_name='Stripe')
@@ -106,6 +121,29 @@ class InterviewApiTests(APITestCase):
 
         rows = self.client.get(f'/api/interviews/?application={stripe.id}').json()
         self.assertEqual([r['company_name'] for r in rows], ['Stripe'])
+
+
+@override_settings(TIME_ZONE='Asia/Jakarta')  # assertions below expect +07:00
+class InterviewWriteTests(APITestCase):
+    def setUp(self):
+        self.app = make_application(company_name='Stripe')
+
+    def post(self, **fields):
+        payload = {'application': self.app.id, 'scheduled_at': '2026-10-20T14:00'} | fields
+        return self.client.post('/api/interviews/', payload, format='json')
+
+    def test_time_without_offset_means_local_time(self):
+        # The form sends "2026-10-20T14:00"; it must stay 14:00 local, not shift by the UTC offset.
+        response = self.post()
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['scheduled_at'], '2026-10-20T14:00:00+07:00')
+        self.assertEqual(response.json()['outcome'], 'awaiting')
+
+    def test_debrief_validation(self):
+        self.assertEqual(self.post(self_score=6).status_code, 400)
+        self.assertEqual(self.post(self_score=0).status_code, 400)
+        self.assertEqual(self.post(outcome='great').status_code, 400)
+        self.assertEqual(self.post(self_score=None, outcome='passed').status_code, 201)
 
 
 class DashboardApiTests(APITestCase):

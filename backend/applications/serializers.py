@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from .models import Application, Interview
@@ -15,7 +16,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
         salary_max = attrs.get('salary_max', getattr(self.instance, 'salary_max', None))
         if salary_min is not None and salary_max is not None and salary_min > salary_max:
             raise serializers.ValidationError(
-                {'salary_max': 'Must be at least the minimum salary.'}
+                {'salary_max': _('Must be at least the minimum salary.')}
             )
         return attrs
 

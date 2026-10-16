@@ -31,14 +31,15 @@ APPLICATIONS = [
 
 # (company, type, days from today, hour, minute, minutes, location, preparation notes)
 INTERVIEWS = [
-    ('Linear', 'phone_screen', -11, 13, 0, 30, '', 'Walk through recent projects.'),
-    ('Vercel', 'final', -12, 15, 0, 60, '', ''),
-    ('Stripe', 'phone_screen', 1, 11, 30, 30, '', 'Review the payments API docs and why Stripe.'),
-    ('Linear', 'technical', 2, 14, 0, 90, '', 'Pair-programming in React. Brush up on rendering performance.'),
-    ('Datadog', 'onsite', 4, 10, 0, 240, '620 8th Ave, New York, NY',
+    ('Linear', 'hr_interview', -11, 13, 0, 30, '', 'Walk through recent projects.'),
+    ('Vercel', 'final_interview', -12, 15, 0, 60, '', ''),
+    ('Asana', 'skills_test', -14, 10, 0, 60, '', 'Practice system design.'),
+    ('Stripe', 'hr_interview', 1, 11, 30, 30, '', 'Review the payments API docs and why Stripe.'),
+    ('Linear', 'skills_test', 2, 14, 0, 90, '', 'Pair-programming in React. Brush up on rendering performance.'),
+    ('Datadog', 'user_interview', 4, 10, 0, 240, '620 8th Ave, New York, NY',
      'Four rounds: coding, system design, behavioral, team match.'),
-    ('Atlassian', 'phone_screen', 7, 16, 0, 30, '', ''),
-    ('Linear', 'behavioral', 9, 9, 30, 45, '', 'Prepare STAR stories about cross-team projects.'),
+    ('Atlassian', 'psychotest', 7, 16, 0, 30, '', ''),
+    ('Linear', 'final_interview', 9, 9, 30, 45, '', 'Prepare STAR stories about cross-team projects.'),
 ]
 
 
@@ -72,6 +73,17 @@ class Command(BaseCommand):
                 scheduled_at=timezone.make_aware(datetime.combine(today + timedelta(days=days), time(hour, minute))),
                 location=location, preparation_notes=notes,
                 meeting_url='' if location else f'https://meet.example.com/{company.lower()}-{kind}',
+            )
+
+        # Debriefs for the interviews that already happened.
+        debriefs = {
+            'Linear': ('passed', 4, 'Good rapport with the recruiter; moved to the technical round.'),
+            'Vercel': ('passed', 5, 'Final round went well; offer followed two days later.'),
+            'Asana': ('not_selected', 2, 'Struggled with the caching part of the system design question.'),
+        }
+        for company, (outcome, score, notes) in debriefs.items():
+            Interview.objects.filter(application=by_company[company], scheduled_at__lt=timezone.now()).update(
+                outcome=outcome, self_score=score, debrief_notes=notes, interviewer='Hiring team'
             )
 
         self.stdout.write(self.style.SUCCESS(

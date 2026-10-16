@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/Card";
-import { formatShortDate } from "@/lib/format";
+import { getServerI18n } from "@/lib/i18n/server";
 import type { WeeklyActivity } from "@/lib/types";
 
 // The SVG uses a 100x100 coordinate box stretched to the container
@@ -9,7 +9,8 @@ const TOP = 22; // leave room for the peak tooltip
 const BOTTOM = 96;
 
 /** Weekly submissions vs. responses, with the busiest week highlighted. */
-export function ActivityChart({ weeks }: { weeks: WeeklyActivity[] }) {
+export async function ActivityChart({ weeks }: { weeks: WeeklyActivity[] }) {
+  const { t, f } = await getServerI18n();
   const max = Math.max(...weeks.flatMap((w) => [w.submitted, w.responses]), 1);
   const toPoint = (value: number, index: number) => ({
     x: weeks.length > 1 ? (index / (weeks.length - 1)) * 100 : 50,
@@ -23,25 +24,25 @@ export function ActivityChart({ weeks }: { weeks: WeeklyActivity[] }) {
   const peak = weeks[peakIndex];
   const hasData = weeks.some((w) => w.submitted > 0 || w.responses > 0);
   const weekLabel = (index: number) =>
-    index === weeks.length - 1 ? "This week" : formatShortDate(weeks[index].week_start);
+    index === weeks.length - 1 ? t.activity.thisWeek : f.shortDate(weeks[index].week_start);
 
   return (
-    <Card title="Application Activity" description="Applications sent and responses received per week">
+    <Card title={t.activity.title} description={t.activity.description}>
       {!hasData ? (
-        <p className="py-10 text-center text-sm text-ink-muted">No activity in the last few weeks.</p>
+        <p className="py-10 text-center text-sm text-ink-muted">{t.activity.empty}</p>
       ) : (
         <>
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-muted">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1.5">
-                <span className="size-3 rounded-sm bg-primary-600" aria-hidden="true" /> Submitted
+                <span className="size-3 rounded-sm bg-primary-600" aria-hidden="true" /> {t.activity.submitted}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-0.5 w-3 border-t-2 border-dashed border-slate-400" aria-hidden="true" /> Responses
+                <span className="h-0.5 w-3 border-t-2 border-dashed border-slate-400" aria-hidden="true" /> {t.activity.responses}
               </span>
             </div>
             <p className="font-mono text-[11px]">
-              Peak: <span className="font-semibold text-ink">{weekLabel(peakIndex)} ({peak.submitted} sent)</span>
+              {t.activity.peak} <span className="font-semibold text-ink">{weekLabel(peakIndex)} ({t.activity.sent(peak.submitted)})</span>
             </p>
           </div>
 
@@ -86,8 +87,8 @@ export function ActivityChart({ weeks }: { weeks: WeeklyActivity[] }) {
                 top: `${submitted[peakIndex].y}%`,
               }}
             >
-              <p className="text-[11px] font-semibold text-white">{peak.submitted} Applied</p>
-              <p className="font-mono text-[9px] text-slate-300">Week of {formatShortDate(peak.week_start)}</p>
+              <p className="text-[11px] font-semibold text-white">{t.activity.sent(peak.submitted)}</p>
+              <p className="font-mono text-[9px] text-slate-300">{t.activity.weekOf(f.shortDate(peak.week_start))}</p>
             </div>
           </div>
 
@@ -102,12 +103,12 @@ export function ActivityChart({ weeks }: { weeks: WeeklyActivity[] }) {
           {/* Same numbers as a table for screen readers. */}
           <div className="sr-only">
             <table>
-              <caption>Applications submitted and responses received per week</caption>
+              <caption>{t.activity.tableCaption}</caption>
               <thead>
                 <tr>
-                  <th scope="col">Week</th>
-                  <th scope="col">Submitted</th>
-                  <th scope="col">Responses</th>
+                  <th scope="col">{t.activity.week}</th>
+                  <th scope="col">{t.activity.submitted}</th>
+                  <th scope="col">{t.activity.responses}</th>
                 </tr>
               </thead>
               <tbody>

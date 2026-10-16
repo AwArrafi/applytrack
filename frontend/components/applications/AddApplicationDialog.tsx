@@ -3,24 +3,23 @@
 // Uses the browser's native <dialog> element: showModal() gives us focus
 // trapping, the Escape key, and a backdrop without extra code.
 
-import { startTransition, useActionState, useEffect, useRef, type ReactNode } from "react";
+import { startTransition, useActionState, useEffect, useRef } from "react";
 import { createApplication, type SaveState } from "@/app/actions";
+import { useI18n } from "@/components/I18nProvider";
 import { CloseIcon, PlusIcon } from "@/components/ui/icons";
-import { APPLICATION_STATUSES, WORK_ARRANGEMENT_LABELS } from "@/lib/constants";
-import type { WorkArrangement } from "@/lib/types";
+import { APPLICATION_STATUSES } from "@/lib/constants";
+import { Field, inputClass, WorkArrangementField } from "./fields";
 
 interface AddApplicationDialogProps {
   open: boolean;
   onClose: () => void;
 }
 
-const inputClass =
-  "h-9 w-full rounded-lg border border-line bg-canvas px-3 text-sm text-ink placeholder:text-ink-subtle focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600";
-
 const INITIAL_STATE: SaveState = { ok: false, errors: {} };
 
 /** Form for recording a new application; saves through the createApplication Server Action. */
 export function AddApplicationDialog({ open, onClose }: AddApplicationDialogProps) {
+  const { t } = useI18n();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, pending] = useActionState(createApplication, INITIAL_STATE);
@@ -66,14 +65,14 @@ export function AddApplicationDialog({ open, onClose }: AddApplicationDialogProp
               <PlusIcon className="size-4" />
             </span>
             <div>
-              <h2 id="add-application-title" className="font-semibold">Add Application</h2>
-              <p className="text-xs text-ink-muted">Record a new role in your pipeline</p>
+              <h2 id="add-application-title" className="font-semibold">{t.applicationForm.addTitle}</h2>
+              <p className="text-xs text-ink-muted">{t.applicationForm.addDescription}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t.common.close}
             className="rounded-lg p-1 text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-primary-600"
           >
             <CloseIcon className="size-5" />
@@ -82,54 +81,35 @@ export function AddApplicationDialog({ open, onClose }: AddApplicationDialogProp
 
         <div className="space-y-4 p-6">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Company name *" htmlFor="add-company" errors={errors.company_name}>
-              <input id="add-company" name="company_name" required placeholder="e.g. Acme Corp" className={inputClass} />
+            <Field label={t.applicationForm.company} htmlFor="add-company" errors={errors.company_name}>
+              <input id="add-company" name="company_name" required placeholder={t.applicationForm.companyPlaceholder} className={inputClass} />
             </Field>
-            <Field label="Role title *" htmlFor="add-role" errors={errors.job_title}>
-              <input id="add-role" name="job_title" required placeholder="e.g. Frontend Engineer" className={inputClass} />
+            <Field label={t.applicationForm.role} htmlFor="add-role" errors={errors.job_title}>
+              <input id="add-role" name="job_title" required placeholder={t.applicationForm.rolePlaceholder} className={inputClass} />
             </Field>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Pipeline stage" htmlFor="add-status" errors={errors.status}>
+            <Field label={t.applicationForm.status} htmlFor="add-status" errors={errors.status}>
               <select id="add-status" name="status" defaultValue="applied" className={inputClass}>
-                {APPLICATION_STATUSES.map(({ value, label }) => (
-                  <option key={value} value={value}>{label}</option>
+                {APPLICATION_STATUSES.map((value) => (
+                  <option key={value} value={value}>{t.status[value]}</option>
                 ))}
               </select>
             </Field>
-            <Field label="Application URL" htmlFor="add-url" errors={errors.job_url}>
+            <Field label={t.applicationForm.jobUrl} htmlFor="add-url" errors={errors.job_url}>
               <input id="add-url" name="job_url" type="url" placeholder="https://..." className={inputClass} />
             </Field>
           </div>
 
-          <fieldset>
-            <legend className="mb-1 text-xs font-medium text-ink">Work arrangement</legend>
-            <div className="grid grid-cols-3 gap-1.5 rounded-lg border border-line/60 bg-surface-muted p-1 text-center">
-              {(Object.keys(WORK_ARRANGEMENT_LABELS) as WorkArrangement[]).map((value) => (
-                <label
-                  key={value}
-                  className="cursor-pointer rounded-md py-1 text-xs font-medium text-ink-muted hover:text-ink has-checked:bg-surface has-checked:text-primary-700 has-checked:shadow-sm has-focus-visible:outline-2 has-focus-visible:outline-primary-600"
-                >
-                  <input
-                    type="radio"
-                    name="work_arrangement"
-                    value={value}
-                    defaultChecked={value === "remote"}
-                    className="sr-only"
-                  />
-                  {WORK_ARRANGEMENT_LABELS[value]}
-                </label>
-              ))}
-            </div>
-          </fieldset>
+          <WorkArrangementField defaultValue="remote" />
 
-          <Field label="Notes" htmlFor="add-notes" errors={errors.notes}>
+          <Field label={t.applicationForm.notes} htmlFor="add-notes" errors={errors.notes}>
             <textarea
               id="add-notes"
               name="notes"
               rows={2}
-              placeholder="Referral, salary range, anything to remember..."
+              placeholder={t.applicationForm.notesPlaceholder}
               className={`${inputClass} h-auto py-2`}
             />
           </Field>
@@ -147,14 +127,14 @@ export function AddApplicationDialog({ open, onClose }: AddApplicationDialogProp
               onClick={onClose}
               className="rounded-lg border border-line bg-surface px-3.5 py-1.5 text-sm font-medium text-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-primary-600"
             >
-              Cancel
+              {t.common.cancel}
             </button>
             <button
               type="submit"
               disabled={pending}
               className="rounded-lg bg-primary-600 px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:cursor-wait disabled:opacity-60"
             >
-              {pending ? "Saving…" : "Save application"}
+              {pending ? t.common.saving : t.applicationForm.save}
             </button>
           </div>
         </div>
@@ -163,26 +143,3 @@ export function AddApplicationDialog({ open, onClose }: AddApplicationDialogProp
   );
 }
 
-interface FieldProps {
-  label: string;
-  htmlFor: string;
-  /** Messages from the API for this field. */
-  errors?: string[];
-  children: ReactNode;
-}
-
-function Field({ label, htmlFor, errors, children }: FieldProps) {
-  return (
-    <div>
-      <label htmlFor={htmlFor} className="mb-1 block text-xs font-medium text-ink">
-        {label}
-      </label>
-      {children}
-      {errors?.map((message) => (
-        <p key={message} className="mt-1 text-xs text-rose-700">
-          {message}
-        </p>
-      ))}
-    </div>
-  );
-}

@@ -1,44 +1,44 @@
+import Link from "next/link";
+import type { ReactNode } from "react";
 import { Card } from "@/components/ui/Card";
-import { ClockIcon, LightbulbIcon, MapPinIcon, VideoIcon } from "@/components/ui/icons";
-import { INTERVIEW_TYPE_LABELS } from "@/lib/constants";
-import { formatTime, formatUpcomingDay } from "@/lib/format";
-import type { InterviewType, InterviewWithApplication } from "@/lib/types";
-
-const TYPE_STYLES: Record<InterviewType, string> = {
-  phone_screen: "bg-blue-50 text-blue-700 ring-blue-200",
-  technical: "bg-purple-50 text-purple-700 ring-purple-200",
-  behavioral: "bg-primary-50 text-primary-700 ring-primary-200",
-  onsite: "bg-amber-50 text-amber-800 ring-amber-200",
-  final: "bg-emerald-50 text-emerald-800 ring-emerald-200",
-  other: "bg-slate-50 text-slate-600 ring-slate-200",
-};
+import { ClockIcon, LightbulbIcon, MapPinIcon, PencilIcon, VideoIcon } from "@/components/ui/icons";
+import { InterviewTypeBadge } from "@/components/ui/InterviewTypeBadge";
+import { getServerI18n } from "@/lib/i18n/server";
+import type { InterviewWithApplication } from "@/lib/types";
 
 interface UpcomingInterviewsProps {
   interviews: InterviewWithApplication[];
   totalUpcoming: number;
   /** ISO date used for "Today" / "Tomorrow" labels. */
   today: string;
+  /** Shown on the right of the title, e.g. a "View calendar" link. */
+  action?: ReactNode;
+  /** When given, each interview gets an Edit link to this URL. */
+  editHref?: (id: number) => string;
 }
 
-export function UpcomingInterviews({ interviews, totalUpcoming, today }: UpcomingInterviewsProps) {
+export async function UpcomingInterviews({ interviews, totalUpcoming, today, action, editHref }: UpcomingInterviewsProps) {
+  const { t, f } = await getServerI18n();
   const remaining = totalUpcoming - interviews.length;
 
   return (
     <Card
       title={
         <>
-          Upcoming Interviews
+          {t.upcoming.title}
           {interviews.length > 0 && <span className="size-2 rounded-full bg-amber-500" aria-hidden="true" />}
         </>
       }
+      action={action}
     >
       {interviews.length === 0 ? (
-        <p className="py-6 text-center text-sm text-ink-muted">No interviews scheduled.</p>
+        <p className="py-6 text-center text-sm text-ink-muted">{t.upcoming.empty}</p>
       ) : (
         <ul className="space-y-3">
           {interviews.map((interview, index) => {
-            const day = formatUpcomingDay(interview.scheduled_at, today);
-            const isSoon = day === "Today" || day === "Tomorrow";
+            const day = f.upcomingDay(interview.scheduled_at, today);
+            // Today or tomorrow: both are date-only strings, so this compares whole days.
+            const isSoon = Date.parse(interview.scheduled_at.slice(0, 10)) - Date.parse(today) <= 86_400_000;
             return (
               <li
                 key={interview.id}
@@ -48,13 +48,12 @@ export function UpcomingInterviews({ interviews, totalUpcoming, today }: Upcomin
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-sm font-semibold text-ink">{interview.company_name}</p>
-                      <span
-                        className={`rounded px-1.5 py-0.5 font-mono text-[10px] ring-1 ring-inset ${TYPE_STYLES[interview.interview_type]}`}
-                      >
-                        {INTERVIEW_TYPE_LABELS[interview.interview_type]}
-                      </span>
+                      <InterviewTypeBadge type={interview.interview_type} />
                     </div>
-                    <p className="mt-0.5 truncate text-xs text-ink-muted">{interview.job_title}</p>
+                    <p className="mt-0.5 truncate text-xs text-ink-muted">
+                      {interview.job_title}
+                      {interview.interviewer && t.upcoming.with(interview.interviewer)}
+                    </p>
                   </div>
                   <time
                     dateTime={interview.scheduled_at}
@@ -70,22 +69,33 @@ export function UpcomingInterviews({ interviews, totalUpcoming, today }: Upcomin
                   <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="flex items-center gap-1">
                       <ClockIcon className="size-3.5 shrink-0" />
-                      {formatTime(interview.scheduled_at)} ({interview.duration_minutes}m)
+                      {f.time(interview.scheduled_at)} ({interview.duration_minutes}m)
                     </span>
                     <span className="flex min-w-0 items-center gap-1">
                       {interview.meeting_url ? (
                         <>
                           <VideoIcon className="size-3.5 shrink-0" />
-                          Video call
+                          {t.upcoming.online}
                         </>
                       ) : (
                         <>
                           <MapPinIcon className="size-3.5 shrink-0" />
-                          <span className="truncate">{interview.location || "Location TBD"}</span>
+                          <span className="truncate">{interview.location || t.upcoming.locationTbd}</span>
                         </>
                       )}
                     </span>
                   </div>
+                  <div className="flex items-center gap-1.5">
+                  {editHref && (
+                    <Link
+                      href={editHref(interview.id)}
+                      className="inline-flex items-center gap-1 rounded border border-line bg-surface px-2 py-1 font-medium text-ink-muted hover:bg-primary-50 hover:text-primary-700 focus-visible:outline-2 focus-visible:outline-primary-600"
+                    >
+                      <PencilIcon className="size-3" />
+                      {t.common.edit}
+                      <span className="sr-only">{t.upcoming.editInterviewWith(interview.company_name)}</span>
+                    </Link>
+                  )}
                   {interview.meeting_url && (
                     <a
                       href={interview.meeting_url}
@@ -97,10 +107,11 @@ export function UpcomingInterviews({ interviews, totalUpcoming, today }: Upcomin
                           : "border border-line bg-surface text-ink hover:bg-surface-muted"
                       }`}
                     >
-                      Join call
-                      <span className="sr-only"> with {interview.company_name} (opens in a new tab)</span>
+                      {t.upcoming.join}
+                      <span className="sr-only">{t.upcoming.joinWith(interview.company_name)}</span>
                     </a>
                   )}
+                  </div>
                 </div>
 
                 {interview.preparation_notes && (
@@ -114,7 +125,7 @@ export function UpcomingInterviews({ interviews, totalUpcoming, today }: Upcomin
           })}
         </ul>
       )}
-      {remaining > 0 && <p className="mt-3 text-xs text-ink-muted">+{remaining} more scheduled</p>}
+      {remaining > 0 && <p className="mt-3 text-xs text-ink-muted">{t.upcoming.more(remaining)}</p>}
     </Card>
   );
 }
