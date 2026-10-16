@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Application, Interview
+from .analytics import build_analytics
 from .pagination import StandardPagination
 from .serializers import ApplicationSerializer, InterviewSerializer
 
@@ -172,3 +173,15 @@ def weekly_activity(applications, today, weeks):
             ).count(),
         })
     return result
+
+
+# Periods the Analytics page offers; anything else falls back to the default.
+ANALYTICS_PERIODS = {'30': 30, '90': 90, 'all': None}
+
+
+class AnalyticsView(APIView):
+    """Everything on the Analytics page. ?period=30 (default), 90, or all."""
+
+    def get(self, request):
+        days = ANALYTICS_PERIODS.get(request.query_params.get('period', '30'), 30)
+        return Response(build_analytics(request.user, days))

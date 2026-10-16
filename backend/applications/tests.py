@@ -324,3 +324,80 @@ class InterviewFilterTests(SignedInTestCase):
                       f'from={today}&to={today + timedelta(days=63)}']:
             with self.subTest(query=query):
                 self.assertEqual(self.client.get(f'/api/interviews/?{query}').status_code, 400)
+
+
+class AnalyticsTests(SignedInTestCase):
+    """A small job search with hand-checked numbers (days are relative to today)."""
+
+    def add(self, source, applied_days_ago, history, interviews=(), user=None):
+        """history: [(status, days_ago), ...] oldest first; the last one is the current status."""
+        app = self.make_application(
+            user=user, source=source, status=history[-1][0],
+            application_date=None if applied_days_ago is None else self.today - timedelta(days=applied_days_ago),
+        )
+        StatusChange.objects.filter(application=app).delete()  # replace the automatic entry
+        previous = ''
+        for status, days_ago in history:
+            StatusChange.objects.create(
+                application=app, from_status=previous, to_status=status,
+                changed_at=timezone.now() - timedelta(days=days_ago),
+            )
+            previous = status
+        for kind in interviews:
+            Interview.objects.create(application=app, interview_type=kind, scheduled_at=timezone.now())
+        return app
+
+    def setUp(self):
+        super().setUp()
+        self.today = timezone.localdate()
+        self.add('linkedin', 3, [('applied', 3)])                                                    # A: no answer yet
+        self.add('linkedin', 10, [('applied', 10), ('screening', 6), ('rejected', 2)])               # B
+        self.add('referral', 20, [('applied', 20), ('screening', 15), ('interview', 10)], ['skills_test'])  # C
+        self.add('referral', 25, [('applied', 25), ('screening', 21), ('interview', 14), ('offer', 4)],
+                 ['final_interview'])                                                                # D
+        self.add('jobstreet', 8, [('applied', 8), ('rejected', 5)])                                  # E: CV rejected
+        self.add('other', None, [('wishlist', 1)])                                                   # F: not applied
+        self.add('other', 40, [('applied', 40)])                                                     # G: last period
+        other = User.objects.create_user('other@example.com', 'a-strong-pass-123')
+        self.add('linkedin', 2, [('applied', 2), ('offer', 1)], user=other)                          # not mine
+
+    def get(self, period='30'):
+        return self.client.get(f'/api/analytics/?period={period}').json()
+
+    def test_kpis_compare_with_the_previous_period(self):
+        kpis = self.get()['kpis']
+        self.assertEqual(kpis['applications'], {'value': 5, 'previous': 1, 'rate': None, 'per_day': 0.2})
+        self.assertEqual(kpis['interviews'], {'value': 2, 'previous': 0, 'rate': 40.0})
+        self.assertEqual(kpis['offers'], {'value': 1, 'previous': 0, 'rate': 20.0})
+        self.assertEqual(kpis['responses'], {'value': 4, 'previous': 0, 'rate': 80.0, 'avg_days': 4.0})
+
+    def test_funnel_counts_stages_ever_reached(self):
+        funnel = {row['stage']: row['count'] for row in self.get()['funnel']}
+        # E was rejected straight from "applied", so it never passed the CV screening.
+        self.assertEqual(funnel, {'submitted': 5, 'screening': 3, 'assessment': 2, 'final': 1, 'offer': 1})
+
+    def test_channels_by_response_rate(self):
+        channels = {row['source']: row for row in self.get()['channels']}
+        self.assertEqual(list(channels), ['linkedin', 'referral', 'jobstreet'])
+        self.assertEqual(
+            {k: channels['referral'][k] for k in ['applications', 'interviews', 'offers', 'responses', 'response_rate']},
+            {'applications': 2, 'interviews': 2, 'offers': 1, 'responses': 2, 'response_rate': 100.0},
+        )
+        self.assertEqual(channels['linkedin']['response_rate'], 50.0)
+
+    def test_response_times_from_status_history(self):
+        times = {row['stage']: row['avg_days'] for row in self.get()['response_times']}
+        self.assertEqual(times, {'applied': 4.0, 'screening': 5.3, 'interview': 10.0, 'offer': 10.0})
+
+    def test_weekly_answers_status_and_follow_ups(self):
+        body = self.get()
+        # This week (days 6..0): A sent; answers B screening (6), E rejected (5), D offer (4), B rejected (2).
+        self.assertEqual(body['weekly'][-1], {'week_start': (self.today - timedelta(days=6)).isoformat(),
+                                              'submitted': 1, 'responses': 4})
+        self.assertEqual(body['status_counts']['wishlist'], 1)
+        self.assertEqual(body['follow_up'], {'count': 1, 'after_days': 5})  # G: applied 40 days ago
+
+    def test_all_time_has_no_previous_period(self):
+        kpis = self.get('all')['kpis']
+        self.assertEqual((kpis['applications']['value'], kpis['applications']['previous']), (6, None))
+        self.assertEqual(self.get('nonsense')['period']['days'], 30)

@@ -13,6 +13,10 @@ export type ApplicationStatus =
 
 export type WorkArrangement = "onsite" | "hybrid" | "remote";
 
+/** Where the job was found and applied for. */
+export type ApplicationSource =
+  | "linkedin" | "jobstreet" | "glints" | "kalibrr" | "company_website" | "referral" | "other";
+
 export type InterviewType =
   | "hr_interview"
   | "user_interview"
@@ -39,6 +43,7 @@ export interface Application {
   salary_currency: string;
   location: string;
   work_arrangement: WorkArrangement;
+  source: ApplicationSource;
   notes: string;
   /** ISO datetime strings. */
   created_at: string;
@@ -121,3 +126,39 @@ export interface Paginated<T> {
 
 /** A compact application for dropdowns (GET /applications/choices/). */
 export type ApplicationChoice = Pick<Application, "id" | "company_name" | "job_title">;
+
+/** GET /analytics/?period=… */
+export interface AnalyticsKpi {
+  value: number;
+  /** The same number in the period before; null for "all time". */
+  previous: number | null;
+  /** Share of submitted applications, in percent. */
+  rate: number | null;
+}
+
+export type FunnelStage = "submitted" | "screening" | "assessment" | "final" | "offer";
+export type ResponseStage = "applied" | "screening" | "interview" | "offer";
+
+export interface Analytics {
+  today: string;
+  period: { days: 30 | 90 | null; start: string | null };
+  kpis: {
+    applications: AnalyticsKpi & { per_day: number | null };
+    interviews: AnalyticsKpi;
+    offers: AnalyticsKpi;
+    responses: AnalyticsKpi & { avg_days: number | null };
+  };
+  funnel: { stage: FunnelStage; count: number }[];
+  weekly: WeeklyActivity[];
+  channels: {
+    source: ApplicationSource;
+    applications: number;
+    interviews: number;
+    offers: number;
+    responses: number;
+    response_rate: number;
+  }[];
+  status_counts: Record<ApplicationStatus, number>;
+  response_times: { stage: ResponseStage; avg_days: number | null; samples: number }[];
+  follow_up: { count: number; after_days: number };
+}

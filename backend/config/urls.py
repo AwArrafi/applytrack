@@ -19,8 +19,9 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
+from accounts.passwords import PasswordChangeView, PasswordResetConfirmView, PasswordResetRequestView
 from accounts.views import LoginView, LogoutView, MeView, RegisterView
-from applications.views import ApplicationViewSet, DashboardView, InterviewViewSet
+from applications.views import AnalyticsView, ApplicationViewSet, DashboardView, InterviewViewSet
 
 from .views import HealthView
 
@@ -35,6 +36,10 @@ urlpatterns = [
     path('api/auth/login/', LoginView.as_view()),
     path('api/auth/logout/', LogoutView.as_view()),
     path('api/auth/me/', MeView.as_view()),
+    path('api/auth/password-reset/', PasswordResetRequestView.as_view()),
+    path('api/auth/password-reset/confirm/', PasswordResetConfirmView.as_view()),
+    path('api/auth/password-change/', PasswordChangeView.as_view()),
     path('api/dashboard/', DashboardView.as_view()),
+    path('api/analytics/', AnalyticsView.as_view()),
     path('api/', include(router.urls)),
 ]

@@ -213,6 +213,10 @@ REST_FRAMEWORK = {
     + (['rest_framework.renderers.BrowsableAPIRenderer'] if DEBUG else []),
 }
 
+# Password reset links (sent by email) open this site and stop working after an hour.
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
+PASSWORD_RESET_TIMEOUT = 60 * 60
+
 # How long a sign-in lasts before the user has to sign in again.
 AUTH_TOKEN_TTL_DAYS = int(os.environ.get('AUTH_TOKEN_TTL_DAYS', '30'))
 

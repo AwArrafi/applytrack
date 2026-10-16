@@ -25,7 +25,7 @@ export interface SaveState {
 
 const APPLICATION_FIELDS = [
   "company_name", "job_title", "status", "application_date", "job_url", "work_arrangement", "location",
-  "salary_min", "salary_max", "salary_currency", "job_description", "notes",
+  "salary_min", "salary_max", "salary_currency", "job_description", "notes", "source",
 ];
 const INTERVIEW_FIELDS = [
   "application", "interview_type", "scheduled_at", "duration_minutes", "interviewer", "meeting_url", "location",
@@ -44,6 +44,10 @@ function toPayload(formData: FormData, fields: string[]) {
   );
 }
 
+const SESSIONLESS_PATHS = [
+  "/auth/login/", "/auth/register/", "/auth/logout/", "/auth/password-reset/", "/auth/password-reset/confirm/",
+];
+
 /**
  * Every write to Django goes through here: adds the session token and language, and sends an
  * expired session to the sign-in page. Returns null when the backend can't be reached.
@@ -60,8 +64,8 @@ async function callApi(method: "POST" | "PATCH" | "DELETE", path: string, payloa
   } catch {
     return null;
   }
-  // A 401 from sign-in itself just means wrong credentials; anywhere else the session is gone.
-  if (response.status === 401 && !["/auth/login/", "/auth/register/", "/auth/logout/"].includes(path)) {
+  // Elsewhere a 401 means the session is gone; these endpoints don't use a session at all.
+  if (response.status === 401 && !SESSIONLESS_PATHS.includes(path)) {
     await clearSessionToken();
     redirect("/login");
   }
@@ -173,4 +177,29 @@ export async function logout() {
   if (await getSessionToken()) await callApi("POST", "/auth/logout/");
   await clearSessionToken();
   redirect("/login");
+}
+
+/** Asks Django to email a reset link. Same answer whether or not the email has an account. */
+export async function requestPasswordReset(_previous: SaveState, formData: FormData) {
+  const { t } = await currentI18n();
+  return toSaveState(await callApi("POST", "/auth/password-reset/", { email: formData.get("email") }), t.errors.saveFailed);
+}
+
+/** Sets a new password from the emailed link (uid and token come in hidden fields). */
+export async function resetPassword(_previous: SaveState, formData: FormData) {
+  const { t } = await currentI18n();
+  const payload = { uid: formData.get("uid"), token: formData.get("token"), password: formData.get("password") };
+  return toSaveState(await callApi("POST", "/auth/password-reset/confirm/", payload), t.errors.saveFailed);
+}
+
+export async function changePassword(_previous: SaveState, formData: FormData) {
+  const { t } = await currentI18n();
+  const response = await callApi("POST", "/auth/password-change/", {
+    current_password: formData.get("current_password"),
+    new_password: formData.get("new_password"),
+  });
+  const state = await toSaveState(response, t.errors.saveFailed);
+  // Django signed out every device and issued a new token for this one.
+  if (state.ok && response) await setSessionToken((await response.json()).token);
+  return state;
 }

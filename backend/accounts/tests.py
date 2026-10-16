@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.core import mail
 from django.core.cache import cache
 from django.test import override_settings
 from django.utils import timezone
@@ -119,3 +120,69 @@ class UserTimeZoneTests(APITestCase):
         Application.objects.filter(pk=app.pk).update(user=jakarta)
         listed = self.client.get('/api/interviews/').json()['results']
         self.assertEqual(listed[0]['scheduled_at'], '2026-10-20T12:00:00+07:00')  # same moment, in WIB
+
+
+@override_settings(
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'], FRONTEND_URL='https://app.example'
+)
+class PasswordResetTests(APITestCase):
+    def setUp(self):
+        cache.clear()
+        self.user = User.objects.create_user('rafi@example.com', 'old-pass-123456', name='Rafi')
+        Token.objects.create(user=self.user)  # an existing sign-in somewhere
+
+    def request_reset(self, email='rafi@example.com'):
+        return self.client.post('/api/auth/password-reset/', {'email': email}, format='json')
+
+    def link_params(self):
+        from urllib.parse import parse_qs, urlsplit
+
+        link = next(word for word in mail.outbox[-1].body.split() if word.startswith('https://app.example/'))
+        query = parse_qs(urlsplit(link).query)
+        return query['uid'][0], query['token'][0]
+
+    def confirm(self, password='brand-new-pass-789', **overrides):
+        uid, token = self.link_params()
+        payload = {'uid': uid, 'token': token, 'password': password} | overrides
+        return self.client.post('/api/auth/password-reset/confirm/', payload, format='json')
+
+    def test_same_answer_for_known_and_unknown_emails(self):
+        self.assertEqual(self.request_reset().status_code, 204)
+        self.assertEqual(self.request_reset('nobody@example.com').status_code, 204)
+        self.assertEqual(len(mail.outbox), 1)  # only the real account gets an email
+
+    def test_email_is_in_the_accounts_language(self):
+        self.request_reset()
+        self.assertEqual(mail.outbox[0].subject, 'Atur ulang kata sandi ApplyTrack Anda')
+        self.user.language = 'en'
+        self.user.save()
+        self.request_reset()
+        self.assertEqual(mail.outbox[1].subject, 'Reset your ApplyTrack password')
+
+    def test_reset_sets_the_password_signs_out_everywhere_and_the_link_works_once(self):
+        self.request_reset()
+        self.assertEqual(self.confirm().status_code, 204)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('brand-new-pass-789'))
+        self.assertFalse(Token.objects.filter(user=self.user).exists())
+        self.assertEqual(self.confirm(password='another-pass-456').status_code, 400)  # link used up
+
+    def test_bad_links_and_weak_passwords_are_rejected(self):
+        self.request_reset()
+        self.assertIn('token', self.confirm(token='wrong').json())
+        self.assertIn('token', self.confirm(uid='bm9wZQ').json())
+        self.assertIn('password', self.confirm(password='123').json())
+
+    def test_change_password_needs_the_current_one_and_keeps_this_device_signed_in(self):
+        self.client.force_authenticate(self.user)
+        wrong = self.client.post(
+            '/api/auth/password-change/', {'current_password': 'nope', 'new_password': 'brand-new-pass-789'},
+            format='json',
+        )
+        self.assertIn('current_password', wrong.json())
+        right = self.client.post(
+            '/api/auth/password-change/',
+            {'current_password': 'old-pass-123456', 'new_password': 'brand-new-pass-789'}, format='json',
+        )
+        self.assertEqual(right.status_code, 200)
+        self.assertEqual(list(Token.objects.filter(user=self.user).values_list('key', flat=True)), [right.json()['token']])

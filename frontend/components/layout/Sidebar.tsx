@@ -39,7 +39,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "overview", href: "/", icon: DashboardIcon },
   { label: "applications", href: "/applications", icon: BriefcaseIcon, count: "applications" },
   { label: "interviews", href: "/interviews", icon: CalendarIcon, count: "upcomingInterviews" },
-  { label: "analytics", href: "/analytics", icon: ChartIcon, comingSoon: true },
+  { label: "analytics", href: "/analytics", icon: ChartIcon },
   { label: "settings", href: "/settings", icon: SettingsIcon },
 ];
 

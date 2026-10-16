@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { DEFAULT_LOCALE, isLocale, LOCALE_COOKIE, LOCALES } from "@/lib/i18n";
-import { PUBLIC_PATHS, SESSION_COOKIE } from "@/lib/session";
+import { PUBLIC_PATHS, SESSION_COOKIE, SIGNED_OUT_ONLY_PATHS } from "@/lib/session";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -9,9 +9,8 @@ export function proxy(request: NextRequest) {
   // Signed-out visitors only see the sign-in and sign-up pages. This only checks that a session
   // cookie exists; Django checks the token itself on every request, so a stale cookie gets no data.
   const signedIn = request.cookies.has(SESSION_COOKIE);
-  const isPublic = PUBLIC_PATHS.includes(pathname);
-  if (!signedIn && !isPublic) return NextResponse.redirect(new URL("/login", request.url));
-  if (signedIn && isPublic) return NextResponse.redirect(new URL("/", request.url));
+  if (!signedIn && !PUBLIC_PATHS.includes(pathname)) return NextResponse.redirect(new URL("/login", request.url));
+  if (signedIn && SIGNED_OUT_ONLY_PATHS.includes(pathname)) return NextResponse.redirect(new URL("/", request.url));
 
   // Serve the page from app/[lang]/ in the saved language (Indonesian by default), so links and
   // URLs don't need a language prefix.

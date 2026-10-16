@@ -1,4 +1,4 @@
-import type { ApplicationStatus, InterviewOutcome, InterviewType, WorkArrangement } from "./types";
+import type { ApplicationSource, ApplicationStatus, InterviewOutcome, InterviewType, WorkArrangement } from "./types";
 
 // Codes only, in display order. The words users see live in lib/i18n (t.status[code] etc).
 
@@ -8,6 +8,10 @@ export const APPLICATION_STATUSES: ApplicationStatus[] = [
 ];
 
 export const WORK_ARRANGEMENTS: WorkArrangement[] = ["onsite", "hybrid", "remote"];
+
+export const APPLICATION_SOURCES: ApplicationSource[] = [
+  "linkedin", "jobstreet", "glints", "kalibrr", "company_website", "referral", "other",
+];
 
 /** Hiring stages, roughly in the order Indonesian companies run them. */
 export const INTERVIEW_TYPES: InterviewType[] = [

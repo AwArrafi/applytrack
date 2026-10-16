@@ -8,7 +8,7 @@ import { createApplication, type SaveState } from "@/app/actions";
 import { useI18n } from "@/components/I18nProvider";
 import { CloseIcon, PlusIcon } from "@/components/ui/icons";
 import { APPLICATION_STATUSES } from "@/lib/constants";
-import { Field, inputClass, WorkArrangementField } from "./fields";
+import { Field, inputClass, SourceField, WorkArrangementField } from "./fields";
 
 interface AddApplicationDialogProps {
   open: boolean;
@@ -102,7 +102,10 @@ export function AddApplicationDialog({ open, onClose }: AddApplicationDialogProp
             </Field>
           </div>
 
-          <WorkArrangementField defaultValue="remote" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <SourceField id="add-source" defaultValue="linkedin" errors={errors.source} />
+            <WorkArrangementField defaultValue="remote" />
+          </div>
 
           <Field label={t.applicationForm.notes} htmlFor="add-notes" errors={errors.notes}>
             <textarea

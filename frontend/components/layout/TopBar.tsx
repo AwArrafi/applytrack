@@ -14,6 +14,7 @@ const BREADCRUMBS: Record<string, [Crumb, Crumb]> = {
   "/applications": ["applications", "all"],
   "/interviews": ["dashboard", "interviews"],
   "/settings": ["dashboard", "settings"],
+  "/analytics": ["dashboard", "analytics"],
 };
 
 interface TopBarProps {

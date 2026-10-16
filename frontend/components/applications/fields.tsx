@@ -4,8 +4,8 @@
 
 import type { ReactNode } from "react";
 import { useI18n } from "@/components/I18nProvider";
-import { WORK_ARRANGEMENTS } from "@/lib/constants";
-import type { WorkArrangement } from "@/lib/types";
+import { APPLICATION_SOURCES, WORK_ARRANGEMENTS } from "@/lib/constants";
+import type { ApplicationSource, WorkArrangement } from "@/lib/types";
 
 export const inputClass =
   "h-9 w-full rounded-lg border border-line bg-canvas px-3 text-sm text-ink placeholder:text-ink-subtle focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600";
@@ -58,5 +58,19 @@ export function WorkArrangementField({ defaultValue }: { defaultValue: WorkArran
         ))}
       </div>
     </fieldset>
+  );
+}
+
+/** "Applied via" (LinkedIn, JobStreet, ...); Analytics compares reply rates per source. */
+export function SourceField({ id, defaultValue, errors }: { id: string; defaultValue: ApplicationSource; errors?: string[] }) {
+  const { t } = useI18n();
+  return (
+    <Field label={t.applicationForm.source} htmlFor={id} errors={errors}>
+      <select id={id} name="source" defaultValue={defaultValue} className={inputClass}>
+        {APPLICATION_SOURCES.map((source) => (
+          <option key={source} value={source}>{t.source[source]}</option>
+        ))}
+      </select>
+    </Field>
   );
 }

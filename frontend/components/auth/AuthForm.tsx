@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition, useActionState } from "react";
+import { startTransition, useActionState, useState } from "react";
 import { login, register, type SaveState } from "@/app/actions";
 import { Field, inputClass } from "@/components/applications/fields";
 import { useI18n } from "@/components/I18nProvider";
+import { ConfirmPasswordField } from "./PasswordForms";
 
 const INITIAL_STATE: SaveState = { ok: false, errors: {} };
 
@@ -14,6 +15,8 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const a = t.auth;
   const isRegister = mode === "register";
   const [state, formAction, pending] = useActionState(isRegister ? register : login, INITIAL_STATE);
+  // Checked here, before sending: it only guards against typos, the server never needs it.
+  const [mismatch, setMismatch] = useState(false);
   const errors = state.errors;
   const generalErrors = [...(errors.form ?? []), ...(errors.non_field_errors ?? [])];
 
@@ -28,6 +31,10 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         onSubmit={(event) => {
           event.preventDefault();
           const formData = new FormData(event.currentTarget);
+          if (isRegister && formData.get("password") !== formData.get("password_confirm")) {
+            setMismatch(true);
+            return;
+          }
           startTransition(() => formAction(formData));
         }}
       >
@@ -58,12 +65,19 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             aria-describedby={isRegister ? "auth-password-hint" : undefined}
             className={inputClass}
           />
-          {isRegister && (
+          {isRegister ? (
             <p id="auth-password-hint" className="mt-1 text-xs text-ink-subtle">
               {a.passwordHint}
             </p>
+          ) : (
+            <Link href="/forgot-password" className="mt-1 inline-block text-xs font-medium text-primary-700 hover:underline">
+              {a.forgotLink}
+            </Link>
           )}
         </Field>
+        {isRegister && (
+          <ConfirmPasswordField id="auth-password-confirm" name="password_confirm" mismatch={mismatch} onChange={() => setMismatch(false)} />
+        )}
 
         <div role="alert" className="text-sm text-rose-700">
           {generalErrors.map((message) => (

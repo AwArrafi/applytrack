@@ -33,6 +33,16 @@ class Application(models.Model):
         HYBRID = 'hybrid', 'Hybrid'
         REMOTE = 'remote', 'Remote'
 
+    # Where the job was found and applied for; Analytics compares response rates per source.
+    class Source(models.TextChoices):
+        LINKEDIN = 'linkedin', 'LinkedIn'
+        JOBSTREET = 'jobstreet', 'JobStreet'
+        GLINTS = 'glints', 'Glints'
+        KALIBRR = 'kalibrr', 'Kalibrr'
+        COMPANY_WEBSITE = 'company_website', 'Company website'
+        REFERRAL = 'referral', 'Referral'
+        OTHER = 'other', 'Other'
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='applications')
     company_name = models.CharField(max_length=200)
     job_title = models.CharField(max_length=200)
@@ -48,6 +58,7 @@ class Application(models.Model):
     work_arrangement = models.CharField(
         max_length=10, choices=WorkArrangement, default=WorkArrangement.ONSITE
     )
+    source = models.CharField(max_length=20, choices=Source, default=Source.OTHER)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

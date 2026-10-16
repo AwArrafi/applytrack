@@ -1,0 +1,1601 @@
+<!doctype html>
+
+<html class="h-full bg-surface" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Analytics &amp; Pipeline Insights — ApplyTrack</title>
+    <!-- Material Symbols Outlined -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Geist and JetBrains Mono Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-fixed": "#e2dfff",
+              "surface-container": "#eaedff",
+              primary: "#3525cd",
+              "secondary-fixed": "#d3e4fe",
+              "on-primary": "#ffffff",
+              "surface-container-lowest": "#ffffff",
+              "surface-variant": "#dae2fd",
+              surface: "#faf8ff",
+              "on-tertiary": "#ffffff",
+              "inverse-surface": "#283044",
+              "tertiary-fixed-dim": "#89ceff",
+              background: "#faf8ff",
+              "surface-bright": "#faf8ff",
+              "primary-container": "#4f46e5",
+              "outline-variant": "#c7c4d8",
+              "on-primary-fixed-variant": "#3323cc",
+              "on-surface-variant": "#464555",
+              "on-tertiary-fixed": "#001e2f",
+              "on-tertiary-fixed-variant": "#004c6e",
+              "inverse-on-surface": "#eef0ff",
+              "on-background": "#131b2e",
+              "on-secondary-container": "#54647a",
+              "surface-container-high": "#e2e7ff",
+              "surface-tint": "#4d44e3",
+              "on-secondary-fixed": "#0b1c30",
+              outline: "#777587",
+              "on-error-container": "#93000a",
+              "on-error": "#ffffff",
+              "tertiary-container": "#006693",
+              "on-primary-fixed": "#0f0069",
+              "inverse-primary": "#c3c0ff",
+              "on-secondary": "#ffffff",
+              "on-primary-container": "#dad7ff",
+              "secondary-container": "#d0e1fb",
+              "surface-container-highest": "#dae2fd",
+              error: "#ba1a1a",
+              secondary: "#505f76",
+              "on-surface": "#131b2e",
+              "primary-fixed-dim": "#c3c0ff",
+              "on-secondary-fixed-variant": "#38485d",
+              tertiary: "#004d70",
+              "error-container": "#ffdad6",
+              "surface-container-low": "#f2f3ff",
+              "surface-dim": "#d2d9f4",
+              "on-tertiary-container": "#b8e0ff",
+              "secondary-fixed-dim": "#b7c8e1",
+              "tertiary-fixed": "#c9e6ff",
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+            spacing: {
+              "space-xl": "1.5rem",
+              "space-2xl": "2rem",
+              "space-xs": "0.25rem",
+              margin: "1rem",
+              "space-lg": "1rem",
+              "space-sm": "0.5rem",
+              "gutter-lg": "1.5rem",
+              "margin-lg": "2rem",
+              gutter: "1rem",
+              "space-md": "0.75rem",
+              "margin-md": "1.5rem",
+            },
+            fontFamily: {
+              "label-sm": ["Geist", "sans-serif"],
+              "headline-lg-mobile": ["Geist", "sans-serif"],
+              display: ["Geist", "sans-serif"],
+              "body-lg": ["Geist", "sans-serif"],
+              "label-md": ["Geist", "sans-serif"],
+              "headline-md": ["Geist", "sans-serif"],
+              "body-sm": ["Geist", "sans-serif"],
+              "headline-sm": ["Geist", "sans-serif"],
+              "headline-lg": ["Geist", "sans-serif"],
+              "mono-code": ["JetBrains Mono", "monospace"],
+              "body-md": ["Geist", "sans-serif"],
+            },
+            fontSize: {
+              "label-sm": [
+                "0.75rem",
+                {
+                  lineHeight: "1rem",
+                  letterSpacing: "0.01em",
+                  fontWeight: "500",
+                },
+              ],
+              "headline-lg-mobile": [
+                "1.5rem",
+                {
+                  lineHeight: "1.875rem",
+                  letterSpacing: "-0.015em",
+                  fontWeight: "600",
+                },
+              ],
+              display: [
+                "2.25rem",
+                {
+                  lineHeight: "2.5rem",
+                  letterSpacing: "-0.025em",
+                  fontWeight: "600",
+                },
+              ],
+              "body-lg": [
+                "1rem",
+                {
+                  lineHeight: "1.5rem",
+                  letterSpacing: "-0.005em",
+                  fontWeight: "400",
+                },
+              ],
+              "label-md": [
+                "0.875rem",
+                {
+                  lineHeight: "1.25rem",
+                  letterSpacing: "-0.005em",
+                  fontWeight: "500",
+                },
+              ],
+              "headline-md": [
+                "1.25rem",
+                {
+                  lineHeight: "1.625rem",
+                  letterSpacing: "-0.015em",
+                  fontWeight: "600",
+                },
+              ],
+              "body-sm": [
+                "0.75rem",
+                {
+                  lineHeight: "1.125rem",
+                  letterSpacing: "0.005em",
+                  fontWeight: "400",
+                },
+              ],
+              "headline-sm": [
+                "1rem",
+                {
+                  lineHeight: "1.375rem",
+                  letterSpacing: "-0.01em",
+                  fontWeight: "600",
+                },
+              ],
+              "headline-lg": [
+                "1.75rem",
+                {
+                  lineHeight: "2.125rem",
+                  letterSpacing: "-0.02em",
+                  fontWeight: "600",
+                },
+              ],
+              "mono-code": [
+                "0.75rem",
+                { lineHeight: "1rem", letterSpacing: "0em", fontWeight: "400" },
+              ],
+              "body-md": [
+                "0.875rem",
+                {
+                  lineHeight: "1.3125rem",
+                  letterSpacing: "0em",
+                  fontWeight: "400",
+                },
+              ],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body
+    class="h-full bg-background text-on-surface font-body-md antialiased overflow-x-hidden"
+  >
+    <!-- ========================================================================= -->
+    <!-- 1. PERSISTENT SIDEBAR COMPONENT (Shared Components JSON Anchor)          -->
+    <!-- ========================================================================= -->
+    <aside
+      class="fixed top-0 left-0 h-screen w-60 z-30 bg-surface-container-lowest border-r border-outline-variant flex flex-col justify-between p-4 select-none"
+    >
+      <div class="flex flex-col gap-5">
+        <!-- Brand Logo & Header -->
+        <div class="flex items-center gap-3 px-1 pt-1">
+          <div
+            class="h-9 w-9 rounded-lg bg-primary-container flex items-center justify-center text-on-primary shadow-sm"
+          >
+            <span class="material-symbols-outlined text-[20px]" data-icon="work"
+              >work</span
+            >
+          </div>
+          <div class="flex flex-col leading-tight">
+            <span
+              class="text-headline-sm font-headline-sm font-bold text-on-surface tracking-tight"
+              >ApplyTrack</span
+            >
+            <span class="text-body-sm font-body-sm text-secondary"
+              >Career Pipeline</span
+            >
+          </div>
+        </div>
+        <!-- Primary Action CTA Button -->
+        <button
+          class="w-full flex items-center justify-center gap-2 bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md py-2 px-3 rounded-lg shadow-sm transition-all duration-150 active:scale-95"
+          type="button"
+        >
+          <span class="material-symbols-outlined text-[18px]" data-icon="add"
+            >add</span
+          >
+          <span>Add Application</span>
+        </button>
+        <!-- Main Navigation Tabs -->
+        <nav aria-label="Sidebar Navigation" class="flex flex-col gap-1 mt-1">
+          <!-- Overview -->
+          <a
+            class="flex items-center gap-3 px-3 py-2 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container transition-colors duration-150 cursor-pointer text-label-md font-label-md"
+            href="#"
+          >
+            <span
+              class="material-symbols-outlined text-[20px]"
+              data-icon="dashboard"
+              >dashboard</span
+            >
+            <span>Overview</span>
+          </a>
+          <!-- Applications -->
+          <a
+            class="flex items-center justify-between px-3 py-2 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container transition-colors duration-150 cursor-pointer text-label-md font-label-md"
+            href="#"
+          >
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-[20px]"
+                data-icon="work"
+                >work</span
+              >
+              <span>Applications</span>
+            </div>
+            <span
+              class="bg-surface-container-high text-primary font-mono-code text-mono-code font-semibold px-2 py-0.5 rounded-full"
+              >24</span
+            >
+          </a>
+          <!-- Interview Calendar -->
+          <a
+            class="flex items-center justify-between px-3 py-2 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container transition-colors duration-150 cursor-pointer text-label-md font-label-md"
+            href="#"
+          >
+            <div class="flex items-center gap-3">
+              <span
+                class="material-symbols-outlined text-[20px]"
+                data-icon="calendar_month"
+                >calendar_month</span
+              >
+              <span>Interview Calendar</span>
+            </div>
+            <span
+              class="bg-secondary-container text-on-secondary-fixed font-mono-code text-mono-code font-semibold px-2 py-0.5 rounded-full"
+              >3</span
+            >
+          </a>
+          <!-- Analytics (ACTIVE Tab according to Contextual State Hierarchy) -->
+          <a
+            class="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-container-high text-primary font-medium transition-colors duration-150 cursor-pointer text-label-md font-label-md"
+            href="#"
+          >
+            <span
+              class="material-symbols-outlined text-[20px]"
+              data-icon="analytics"
+              data-weight="fill"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >analytics</span
+            >
+            <span>Analytics</span>
+          </a>
+          <!-- Settings -->
+          <a
+            class="flex items-center gap-3 px-3 py-2 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container transition-colors duration-150 cursor-pointer text-label-md font-label-md"
+            href="#"
+          >
+            <span
+              class="material-symbols-outlined text-[20px]"
+              data-icon="settings"
+              >settings</span
+            >
+            <span>Settings</span>
+          </a>
+        </nav>
+      </div>
+      <!-- Sidebar Footer / User Profile Card -->
+      <div class="border-t border-outline-variant/60 pt-4 flex flex-col gap-2">
+        <div
+          class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-surface-container transition-colors duration-150"
+        >
+          <div
+            class="relative w-9 h-9 rounded-full bg-surface-variant overflow-hidden flex-shrink-0 flex items-center justify-center font-semibold text-primary"
+          >
+            <img
+              class="w-full h-full object-cover"
+              data-alt="Close up professional portrait of Awang Setiawan with short black hair wearing a crisp navy collared shirt in a bright modern tech office setting with soft daylight background."
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAtpRngC7AC61vweZI6E9i0DJFnV9jrp0zPUEOwmfi7FSMNzztiod9zr7-YiCEsBsXubToZC5CRvXd7ju-D-KYIewLRxVy7_Z0Abem8YTWMmWire29ylidi7Ne_W0QljLeX26TGZG5IKsH_9qyXNQvkaLVZ3ZEZdC_UwFBZwA8xw6m8a87FjfQCp7SQNnUsJ1YEomr0V2UKtRRTARytDsBwmMoK5dIgyygoSJekrtWEYXOuXPQyzW1"
+            />
+          </div>
+          <div class="flex flex-col min-w-0 flex-1">
+            <span
+              class="text-label-md font-label-md font-semibold text-on-surface truncate"
+              >Awang Setiawan</span
+            >
+            <span
+              class="text-body-sm font-body-sm text-secondary truncate flex items-center gap-1"
+            >
+              <span
+                class="w-1.5 h-1.5 rounded-full bg-primary inline-block"
+              ></span>
+              Pro Pipeline
+            </span>
+          </div>
+        </div>
+        <div
+          class="flex flex-col gap-0.5 text-body-sm font-body-sm text-secondary"
+        >
+          <a
+            class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg hover:text-on-surface hover:bg-surface-container transition-colors"
+            href="#"
+          >
+            <span
+              class="material-symbols-outlined text-[18px]"
+              data-icon="account_circle"
+              >account_circle</span
+            >
+            <span>Profile &amp; Account</span>
+          </a>
+          <a
+            class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg hover:text-error hover:bg-error-container/30 transition-colors"
+            href="#"
+          >
+            <span
+              class="material-symbols-outlined text-[18px]"
+              data-icon="logout"
+              >logout</span
+            >
+            <span>Sign out</span>
+          </a>
+        </div>
+      </div>
+    </aside>
+    <!-- ========================================================================= -->
+    <!-- 2. MAIN CONTAINER & TOP NAVIGATION BAR                                   -->
+    <!-- ========================================================================= -->
+    <div class="pl-60 flex flex-col min-h-screen">
+      <!-- Top Contextual Header Bar -->
+      <header
+        class="sticky top-0 z-20 h-14 bg-surface-container-lowest border-b border-outline-variant px-8 flex items-center justify-between"
+      >
+        <!-- Breadcrumb & Search Cluster -->
+        <div class="flex items-center gap-6 flex-1 max-w-xl">
+          <nav
+            aria-label="Breadcrumb"
+            class="flex items-center gap-2 text-label-md font-label-md text-secondary"
+          >
+            <span class="hover:text-on-surface cursor-pointer">Dashboard</span>
+            <span
+              class="material-symbols-outlined text-[14px]"
+              data-icon="chevron_right"
+              >chevron_right</span
+            >
+            <span class="text-primary font-semibold">Analytics</span>
+          </nav>
+          <!-- Command Palette Input Bar (on_left search) -->
+          <div class="relative w-full max-w-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary"
+            >
+              <span
+                class="material-symbols-outlined text-[18px]"
+                data-icon="search"
+                >search</span
+              >
+            </div>
+            <input
+              class="w-full h-8 pl-9 pr-12 text-body-md font-body-md bg-surface-container-low border border-outline-variant/80 rounded-lg placeholder-secondary/70 focus:bg-surface-container-lowest focus:border-primary-container focus:ring-1 focus:ring-primary-container text-on-surface transition-all"
+              placeholder="Search metrics, companies, roles..."
+              type="text"
+            />
+            <div
+              class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none"
+            >
+              <kbd
+                class="px-1.5 py-0.5 text-[10px] font-mono-code bg-surface-container-lowest text-secondary border border-outline-variant rounded font-medium shadow-2xs"
+                >⌘K</kbd
+              >
+            </div>
+          </div>
+        </div>
+        <!-- Trailing Action Controls & Filtering -->
+        <div class="flex items-center gap-3">
+          <!-- Date Range Filter Dropdown -->
+          <div class="relative inline-block text-left">
+            <button
+              class="h-8 px-3 inline-flex items-center gap-2 rounded-lg bg-surface-container-lowest border border-outline-variant text-label-md font-label-md text-on-surface hover:bg-surface-container-low transition-colors duration-150"
+              type="button"
+            >
+              <span
+                class="material-symbols-outlined text-[16px] text-secondary"
+                data-icon="calendar_today"
+                >calendar_today</span
+              >
+              <span>Last 30 Days</span>
+              <span
+                class="material-symbols-outlined text-[16px] text-secondary"
+                data-icon="expand_more"
+                >expand_more</span
+              >
+            </button>
+          </div>
+          <!-- Compare Toggle -->
+          <div
+            class="flex items-center gap-2 px-3 py-1 bg-surface-container-low rounded-lg border border-outline-variant/60 cursor-pointer"
+          >
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input checked="" class="sr-only peer" type="checkbox" />
+              <div
+                class="w-8 h-4 bg-outline-variant/60 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary-container"
+              ></div>
+            </label>
+            <span class="text-body-sm font-body-sm text-secondary select-none"
+              >Compare with prev. period</span
+            >
+          </div>
+          <div class="h-4 w-px bg-outline-variant"></div>
+          <!-- Export Action -->
+          <button
+            class="h-8 px-3 inline-flex items-center gap-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant hover:border-outline text-label-md font-label-md text-on-surface hover:bg-surface-container-low transition-all duration-150"
+            type="button"
+          >
+            <span
+              class="material-symbols-outlined text-[16px] text-secondary"
+              data-icon="download"
+              >download</span
+            >
+            <span>Export Report</span>
+            <span
+              class="material-symbols-outlined text-[14px] text-secondary"
+              data-icon="arrow_drop_down"
+              >arrow_drop_down</span
+            >
+          </button>
+          <!-- Notification & Help Utility Icons -->
+          <button
+            class="w-8 h-8 flex items-center justify-center rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container transition-colors"
+            type="button"
+          >
+            <span
+              class="material-symbols-outlined text-[20px]"
+              data-icon="notifications"
+              >notifications</span
+            >
+          </button>
+          <button
+            class="w-8 h-8 flex items-center justify-center rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container transition-colors"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[20px]" data-icon="help"
+              >help</span
+            >
+          </button>
+        </div>
+      </header>
+      <!-- ========================================================================= -->
+      <!-- 3. PAGE BODY / ANALYTICS CANVAS                                         -->
+      <!-- ========================================================================= -->
+      <main class="flex-1 p-8 space-y-6 max-w-[1600px] w-full mx-auto">
+        <!-- Header Section: Title, Subtitle & Benchmark Badge -->
+        <div
+          class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+        >
+          <div>
+            <h1
+              class="text-headline-lg font-headline-lg text-on-surface tracking-tight"
+            >
+              Statistik &amp; Performa Lamaran
+            </h1>
+            <p class="text-body-md font-body-md text-secondary mt-1">
+              Pantau alur proses kerja, tingkat respon recruiter, dan
+              efektivitas strategi melamar pekerjaan Anda.
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div
+              class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant border border-primary-fixed-dim/40 text-label-sm font-label-sm"
+            >
+              <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span
+              ><span class="font-semibold">Top 15% Respon Cepat</span>
+            </div>
+            <span
+              class="text-body-sm font-body-sm text-secondary bg-surface-container-lowest border border-outline-variant px-3 py-1.5 rounded-lg flex items-center gap-1.5"
+              ><span
+                class="material-symbols-outlined text-[14px] text-primary"
+                data-icon="sync"
+                >sync</span
+              >Data diperbarui • 48 total lamaran aktif</span
+            >
+          </div>
+        </div>
+        <!-- ========================================================================= -->
+        <!-- 4. TOP PERFORMANCE & CONVERSION KPI CARDS (Grid of 4)                    -->
+        <!-- ========================================================================= -->
+        <section
+          aria-label="Key Performance Indicators"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        >
+          <div
+            class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 hover:border-outline transition-all duration-150 flex flex-col justify-between"
+          >
+            <div class="flex items-start justify-between">
+              <span
+                class="text-label-sm font-label-sm text-secondary uppercase tracking-wider"
+                >Total Lamaran</span
+              ><span
+                class="inline-flex items-center gap-0.5 text-label-sm font-label-sm text-primary font-semibold bg-surface-container-high px-2 py-0.5 rounded-full"
+                ><span
+                  class="material-symbols-outlined text-[14px]"
+                  data-icon="trending_up"
+                  >trending_up</span
+                >+14%</span
+              >
+            </div>
+            <div class="my-2">
+              <span class="text-display font-display text-on-surface">48</span>
+            </div>
+            <div
+              class="flex items-center justify-between text-body-sm font-body-sm text-secondary border-t border-outline-variant/40 pt-2.5"
+            >
+              <span>1.6 lamaran / hari</span
+              ><span class="font-mono-code text-mono-code text-secondary/80"
+                >Bulan lalu: 42</span
+              >
+            </div>
+          </div>
+          <div
+            class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 hover:border-outline transition-all duration-150 flex flex-col justify-between"
+          >
+            <div class="flex items-start justify-between">
+              <span
+                class="text-label-sm font-label-sm text-secondary uppercase tracking-wider"
+                >Dipanggil Interview</span
+              ><span
+                class="inline-flex items-center gap-0.5 text-label-sm font-label-sm text-primary font-semibold bg-surface-container-high px-2 py-0.5 rounded-full"
+                ><span
+                  class="material-symbols-outlined text-[14px]"
+                  data-icon="trending_up"
+                  >trending_up</span
+                >+3.8%</span
+              >
+            </div>
+            <div class="my-2 flex items-baseline gap-2">
+              <span class="text-display font-display text-on-surface">12</span
+              ><span class="text-headline-md font-headline-md text-secondary"
+                >posisi</span
+              >
+            </div>
+            <div
+              class="flex items-center justify-between text-body-sm font-body-sm text-secondary border-t border-outline-variant/40 pt-2.5"
+            >
+              <span class="truncate">Tingkat Panggilan: 25.0%</span
+              ><span class="font-mono-code text-mono-code text-secondary/80"
+                >Standar: 18%</span
+              >
+            </div>
+          </div>
+          <div
+            class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 hover:border-outline transition-all duration-150 flex flex-col justify-between"
+          >
+            <div class="flex items-start justify-between">
+              <span
+                class="text-label-sm font-label-sm text-secondary uppercase tracking-wider"
+                >Penawaran (Offer)</span
+              ><span
+                class="inline-flex items-center gap-0.5 text-label-sm font-label-sm text-primary font-semibold bg-surface-container-high px-2 py-0.5 rounded-full"
+                ><span
+                  class="material-symbols-outlined text-[14px]"
+                  data-icon="trending_up"
+                  >trending_up</span
+                >+1.1%</span
+              >
+            </div>
+            <div class="my-2 flex items-baseline gap-2">
+              <span class="text-display font-display text-on-surface">2</span
+              ><span class="text-headline-md font-headline-md text-secondary"
+                >tawaran</span
+              >
+            </div>
+            <div
+              class="flex items-center justify-between text-body-sm font-body-sm text-secondary border-t border-outline-variant/40 pt-2.5"
+            >
+              <span class="truncate">Tingkat Keberhasilan: 4.2%</span
+              ><span class="font-mono-code text-mono-code text-secondary/80"
+                >Target: 3.5%</span
+              >
+            </div>
+          </div>
+          <div
+            class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 hover:border-outline transition-all duration-150 flex flex-col justify-between"
+          >
+            <div class="flex items-start justify-between">
+              <span
+                class="text-label-sm font-label-sm text-secondary uppercase tracking-wider"
+                >Respon Recruiter</span
+              ><span
+                class="inline-flex items-center gap-0.5 text-label-sm font-label-sm text-primary font-semibold bg-surface-container-high px-2 py-0.5 rounded-full"
+                ><span
+                  class="material-symbols-outlined text-[14px]"
+                  data-icon="trending_up"
+                  >trending_up</span
+                >43.8%</span
+              >
+            </div>
+            <div class="my-2 flex items-baseline gap-2">
+              <span class="text-display font-display text-on-surface">21</span
+              ><span class="text-headline-md font-headline-md text-secondary"
+                >dibalas</span
+              >
+            </div>
+            <div
+              class="flex items-center justify-between text-body-sm font-body-sm text-secondary border-t border-outline-variant/40 pt-2.5"
+            >
+              <span class="truncate">Kabar balik ~5 hari kerja</span
+              ><span class="font-mono-code text-mono-code text-secondary/80"
+                >21 dari 48</span
+              >
+            </div>
+          </div>
+        </section>
+        <!-- ========================================================================= -->
+        <!-- 5. RECRUITMENT CONVERSION FUNNEL & STAGE DROP-OFF (Prominent Card)        -->
+        <!-- ========================================================================= -->
+        <section
+          class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-2xs"
+        >
+          <div
+            class="flex flex-col md:flex-row md:items-center justify-between pb-5 border-b border-outline-variant/60 gap-3"
+          >
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-headline-md font-headline-md text-on-surface">
+                  Ringkasan Corong Lamaran Kerja
+                </h2>
+                <span
+                  class="px-2 py-0.5 rounded bg-surface-container text-primary font-mono-code text-mono-code font-medium"
+                  >Siklus Aktif</span
+                >
+              </div>
+              <p class="text-body-sm font-body-sm text-secondary mt-0.5">
+                Alur perjalanan dari lamaran dikirim hingga penawaran kerja yang
+                Anda terima.
+              </p>
+            </div>
+            <div
+              class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant/60 text-body-sm font-body-sm"
+            >
+              <span
+                class="material-symbols-outlined text-[16px] text-tertiary"
+                data-icon="info"
+                >info</span
+              ><span class="text-on-surface font-medium">Fokus Evaluasi:</span
+              ><span class="text-secondary"
+                >Dari 48 lamaran, 19 berhasil lolos seleksi berkas (39.5%). CV
+                Anda efektif!</span
+              >
+            </div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-5 gap-3 mt-6">
+            <div
+              class="p-4 rounded-lg bg-surface-container-low/70 border border-outline-variant/50 relative flex flex-col justify-between"
+            >
+              <div class="flex items-center justify-between mb-2">
+                <span
+                  class="text-mono-code font-mono-code text-[11px] font-semibold text-secondary uppercase"
+                  >Tahap 01</span
+                ><span
+                  class="text-label-sm font-label-sm font-bold text-on-surface bg-surface-container-lowest px-2 py-0.5 rounded border border-outline-variant/40"
+                  >100%</span
+                >
+              </div>
+              <div>
+                <div
+                  class="text-headline-md font-headline-md font-bold text-on-surface"
+                >
+                  48
+                </div>
+                <div
+                  class="text-label-md font-label-md text-on-surface mt-0.5 font-semibold"
+                >
+                  Terkirim / Dilamar
+                </div>
+                <div class="text-body-sm font-body-sm text-secondary">
+                  Kirim lamaran awal
+                </div>
+              </div>
+              <div
+                class="mt-4 pt-3 border-t border-outline-variant/40 flex items-center justify-between text-body-sm font-body-sm"
+              >
+                <span class="text-secondary">Lanjut tahap</span
+                ><span
+                  class="font-mono-code text-mono-code font-semibold text-primary"
+                  >39.5% lolos</span
+                >
+              </div>
+            </div>
+            <div
+              class="p-4 rounded-lg bg-surface-container-low/70 border border-outline-variant/50 relative flex flex-col justify-between"
+            >
+              <div class="flex items-center justify-between mb-2">
+                <span
+                  class="text-mono-code font-mono-code text-[11px] font-semibold text-secondary uppercase"
+                  >Tahap 02</span
+                ><span
+                  class="text-label-sm font-label-sm font-bold text-on-surface bg-surface-container-lowest px-2 py-0.5 rounded border border-outline-variant/40"
+                  >39.5%</span
+                >
+              </div>
+              <div>
+                <div
+                  class="text-headline-md font-headline-md font-bold text-on-surface"
+                >
+                  19
+                </div>
+                <div
+                  class="text-label-md font-label-md text-on-surface mt-0.5 font-semibold"
+                >
+                  Lolos Seleksi Berkas
+                </div>
+                <div class="text-body-sm font-body-sm text-secondary">
+                  Screening CV &amp; HR call
+                </div>
+              </div>
+              <div
+                class="mt-4 pt-3 border-t border-outline-variant/40 flex items-center justify-between text-body-sm font-body-sm"
+              >
+                <span class="text-secondary">Dari tahap 1</span
+                ><span
+                  class="font-mono-code text-mono-code font-semibold text-primary"
+                  >63.1% lolos</span
+                >
+              </div>
+            </div>
+            <div
+              class="p-4 rounded-lg bg-surface-container-low/70 border border-outline-variant/50 relative flex flex-col justify-between"
+            >
+              <div class="flex items-center justify-between mb-2">
+                <span
+                  class="text-mono-code font-mono-code text-[11px] font-semibold text-secondary uppercase"
+                  >Tahap 03</span
+                ><span
+                  class="text-label-sm font-label-sm font-bold text-on-surface bg-surface-container-lowest px-2 py-0.5 rounded border border-outline-variant/40"
+                  >25.0%</span
+                >
+              </div>
+              <div>
+                <div
+                  class="text-headline-md font-headline-md font-bold text-on-surface"
+                >
+                  12
+                </div>
+                <div
+                  class="text-label-md font-label-md text-on-surface mt-0.5 font-semibold"
+                >
+                  Tes Teknis / User
+                </div>
+                <div class="text-body-sm font-body-sm text-secondary">
+                  Live coding &amp; tes teknis
+                </div>
+              </div>
+              <div
+                class="mt-4 pt-3 border-t border-outline-variant/40 flex items-center justify-between text-body-sm font-body-sm"
+              >
+                <span class="text-secondary">Dari tahap 2</span
+                ><span
+                  class="font-mono-code text-mono-code font-semibold text-primary"
+                  >41.6% lolos</span
+                >
+              </div>
+            </div>
+            <div
+              class="p-4 rounded-lg bg-surface-container-low/70 border border-outline-variant/50 relative flex flex-col justify-between"
+            >
+              <div class="flex items-center justify-between mb-2">
+                <span
+                  class="text-mono-code font-mono-code text-[11px] font-semibold text-secondary uppercase"
+                  >Tahap 04</span
+                ><span
+                  class="text-label-sm font-label-sm font-bold text-on-surface bg-surface-container-lowest px-2 py-0.5 rounded border border-outline-variant/40"
+                  >10.4%</span
+                >
+              </div>
+              <div>
+                <div
+                  class="text-headline-md font-headline-md font-bold text-on-surface"
+                >
+                  5
+                </div>
+                <div
+                  class="text-label-md font-label-md text-on-surface mt-0.5 font-semibold"
+                >
+                  Interview Akhir
+                </div>
+                <div class="text-body-sm font-body-sm text-secondary">
+                  Head/Direksi &amp; negosiasi
+                </div>
+              </div>
+              <div
+                class="mt-4 pt-3 border-t border-outline-variant/40 flex items-center justify-between text-body-sm font-body-sm"
+              >
+                <span class="text-secondary">Dari tahap 3</span
+                ><span
+                  class="font-mono-code text-mono-code font-semibold text-primary"
+                  >40.0% lolos</span
+                >
+              </div>
+            </div>
+            <div
+              class="p-4 rounded-lg bg-primary-fixed/30 border border-primary-container/30 relative flex flex-col justify-between"
+            >
+              <div class="flex items-center justify-between mb-2">
+                <span
+                  class="text-mono-code font-mono-code text-[11px] font-semibold text-primary uppercase"
+                  >Tahap 05</span
+                ><span
+                  class="text-label-sm font-label-sm font-bold text-primary-container bg-surface-container-lowest px-2 py-0.5 rounded border border-primary-container/20"
+                  >4.2%</span
+                >
+              </div>
+              <div>
+                <div
+                  class="text-headline-md font-headline-md font-bold text-primary"
+                >
+                  2
+                </div>
+                <div
+                  class="text-label-md font-label-md text-on-surface mt-0.5 font-semibold"
+                >
+                  Tawaran Kerja (Offer)
+                </div>
+                <div class="text-body-sm font-body-sm text-secondary">
+                  Offering letter resmi
+                </div>
+              </div>
+              <div
+                class="mt-4 pt-3 border-t border-primary-container/20 flex items-center justify-between text-body-sm font-body-sm"
+              >
+                <span class="text-secondary">Keberhasilan</span
+                ><span
+                  class="font-mono-code text-mono-code font-bold text-primary"
+                  >100% diterima</span
+                >
+              </div>
+            </div>
+          </div>
+          <div class="mt-6 pt-4 border-t border-outline-variant/40">
+            <div
+              class="flex items-center justify-between text-body-sm font-body-sm mb-2"
+            >
+              <span class="text-secondary font-medium"
+                >Distribusi Perjalanan Tahap Lamaran</span
+              ><span class="font-mono-code text-mono-code text-secondary"
+                >Total Konversi Lamaran: 4.2%</span
+              >
+            </div>
+            <div
+              class="h-4 w-full bg-surface-container-low rounded-full overflow-hidden flex p-0.5 gap-1 border border-outline-variant/50"
+            >
+              <div
+                class="h-full bg-primary-container rounded-l-full relative group cursor-pointer"
+                style="width: 100%"
+                title="Terkirim: 48"
+              ></div>
+              <div
+                class="h-full bg-primary rounded-xs relative group cursor-pointer"
+                style="width: 39.5%"
+                title="Lolos Seleksi Berkas: 19"
+              ></div>
+              <div
+                class="h-full bg-tertiary-container rounded-xs relative group cursor-pointer"
+                style="width: 25%"
+                title="Tes Teknis / User: 12"
+              ></div>
+              <div
+                class="h-full bg-secondary-container rounded-xs relative group cursor-pointer"
+                style="width: 10.4%"
+                title="Interview Akhir: 5"
+              ></div>
+              <div
+                class="h-full bg-primary-fixed rounded-r-full relative group cursor-pointer"
+                style="width: 4.2%"
+                title="Tawaran Kerja: 2"
+              ></div>
+            </div>
+            <div
+              class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-3 text-body-sm font-body-sm text-secondary"
+            >
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-xs bg-primary-container"></span
+                ><span>Terkirim (48)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-xs bg-primary"></span
+                ><span>Lolos Seleksi Berkas (19)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-xs bg-tertiary-container"></span
+                ><span>Tes Teknis / User (12)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-xs bg-secondary-container"></span
+                ><span>Interview Akhir (5)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-xs bg-primary-fixed"></span
+                ><span>Tawaran Kerja (2)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- ========================================================================= -->
+        <!-- 6. TWO-COLUMN DETAILED ANALYTICS VISUALIZATIONS                           -->
+        <!-- ========================================================================= -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- ======================= LEFT COLUMN (60% / col-span-7) ================= -->
+          <div class="lg:col-span-7 space-y-6">
+            <!-- Activity Over Time Chart Card -->
+            <div
+              class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6"
+            >
+              <div
+                class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-outline-variant/60 gap-3"
+              >
+                <div>
+                  <h3 class="text-headline-sm font-headline-sm text-on-surface">
+                    Aktivitas Melamar &amp; Respon Mingguan
+                  </h3>
+                  <p class="text-body-sm font-body-sm text-secondary mt-0.5">
+                    Perbandingan volume lamaran dikirim versus respon balasan
+                    recruiter dalam 6 minggu
+                  </p>
+                </div>
+                <!-- Weekly vs Monthly Toggle -->
+                <div
+                  class="inline-flex p-0.5 bg-surface-container rounded-lg border border-outline-variant/60 text-label-sm font-label-sm self-start"
+                >
+                  <h3 class="text-headline-sm font-headline-sm text-on-surface">
+                    Aktivitas Melamar &amp; Respon Mingguan
+                  </h3>
+                  <p class="text-body-sm font-body-sm text-secondary mt-0.5">
+                    Perbandingan volume lamaran dikirim versus respon balasan
+                    recruiter dalam 6 minggu
+                  </p>
+                </div>
+              </div>
+              <!-- Chart Canvas Container -->
+              <div class="pt-6">
+                <!-- Peak Callout Annotation -->
+                <div class="flex items-center justify-between mb-4">
+                  <div
+                    class="flex items-center gap-4 text-label-sm font-label-sm"
+                  >
+                    <div class="flex items-center gap-2">
+                      <span class="w-3 h-1 bg-primary-container rounded"></span
+                      ><span class="text-on-surface">Lamaran Terkirim</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="w-3 h-1 bg-tertiary-fixed-dim rounded"></span
+                      ><span class="text-secondary">Respon Diterima</span>
+                    </div>
+                  </div>
+                  <div
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container-high text-primary font-mono-code text-[11px] font-medium border border-outline-variant/40"
+                  >
+                    <span
+                      class="material-symbols-outlined text-[14px]"
+                      data-icon="star"
+                      >star</span
+                    ><span>Puncak: Minggu 3 (14 lamaran, 5 balasan)</span>
+                  </div>
+                </div>
+                <!-- SVG Area / Line Chart -->
+                <div class="w-full h-56 relative flex items-end">
+                  <svg
+                    class="w-full h-full overflow-visible"
+                    preserveaspectratio="none"
+                    viewbox="0 0 600 200"
+                  >
+                    <defs>
+                      <lineargradient
+                        id="primaryGradient"
+                        x1="0"
+                        x2="0"
+                        y1="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          stop-color="#4F46E5"
+                          stop-opacity="0.25"
+                        ></stop>
+                        <stop
+                          offset="100%"
+                          stop-color="#4F46E5"
+                          stop-opacity="0.0"
+                        ></stop>
+                      </lineargradient>
+                      <lineargradient
+                        id="tertiaryGradient"
+                        x1="0"
+                        x2="0"
+                        y1="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          stop-color="#89CEFF"
+                          stop-opacity="0.3"
+                        ></stop>
+                        <stop
+                          offset="100%"
+                          stop-color="#89CEFF"
+                          stop-opacity="0.0"
+                        ></stop>
+                      </lineargradient>
+                    </defs>
+                    <!-- Horizontal Grid Lines -->
+                    <line
+                      stroke="#E2E8F0"
+                      stroke-dasharray="3 3"
+                      x1="0"
+                      x2="600"
+                      y1="0"
+                      y2="0"
+                    ></line>
+                    <line
+                      stroke="#E2E8F0"
+                      stroke-dasharray="3 3"
+                      x1="0"
+                      x2="600"
+                      y1="50"
+                      y2="50"
+                    ></line>
+                    <line
+                      stroke="#E2E8F0"
+                      stroke-dasharray="3 3"
+                      x1="0"
+                      x2="600"
+                      y1="100"
+                      y2="100"
+                    ></line>
+                    <line
+                      stroke="#E2E8F0"
+                      stroke-dasharray="3 3"
+                      x1="0"
+                      x2="600"
+                      y1="150"
+                      y2="150"
+                    ></line>
+                    <line
+                      stroke="#CBD5E1"
+                      x1="0"
+                      x2="600"
+                      y1="200"
+                      y2="200"
+                    ></line>
+                    <!-- Applications Sent Area & Path -->
+                    <path
+                      d="M 0,160 Q 60,140 120,130 T 240,20 T 360,90 T 480,70 T 600,110 L 600,200 L 0,200 Z"
+                      fill="url(#primaryGradient)"
+                    ></path>
+                    <path
+                      d="M 0,160 Q 60,140 120,130 T 240,20 T 360,90 T 480,70 T 600,110"
+                      fill="none"
+                      stroke="#4F46E5"
+                      stroke-linecap="round"
+                      stroke-width="2.5"
+                    ></path>
+                    <!-- Responses Received Area & Path -->
+                    <path
+                      d="M 0,190 Q 60,180 120,165 T 240,115 T 360,135 T 480,120 T 600,145 L 600,200 L 0,200 Z"
+                      fill="url(#tertiaryGradient)"
+                    ></path>
+                    <path
+                      d="M 0,190 Q 60,180 120,165 T 240,115 T 360,135 T 480,120 T 600,145"
+                      fill="none"
+                      stroke="#006693"
+                      stroke-linecap="round"
+                      stroke-width="2"
+                    ></path>
+                    <!-- Data Point Nodes (Week 3 Peak) -->
+                    <circle
+                      cx="240"
+                      cy="20"
+                      fill="#4F46E5"
+                      r="5"
+                      stroke="#FFFFFF"
+                      stroke-width="2"
+                    ></circle>
+                    <circle
+                      cx="240"
+                      cy="115"
+                      fill="#006693"
+                      r="4"
+                      stroke="#FFFFFF"
+                      stroke-width="2"
+                    ></circle>
+                    <!-- Other Nodes -->
+                    <circle cx="120" cy="130" fill="#4F46E5" r="3.5"></circle>
+                    <circle cx="360" cy="90" fill="#4F46E5" r="3.5"></circle>
+                    <circle cx="480" cy="70" fill="#4F46E5" r="3.5"></circle>
+                    <circle cx="600" cy="110" fill="#4F46E5" r="3.5"></circle>
+                  </svg>
+                </div>
+                <!-- X-Axis Labels -->
+                <div
+                  class="grid grid-cols-6 text-center pt-2 text-mono-code font-mono-code text-[11px] text-secondary"
+                >
+                  <span>Week 1</span>
+                  <span>Week 2</span>
+                  <span class="font-bold text-primary">Week 3</span>
+                  <span>Week 4</span>
+                  <span>Week 5</span>
+                  <span>Week 6 (Current)</span>
+                </div>
+              </div>
+            </div>
+            <!-- Conversion by Employment & Work Arrangement Breakdown -->
+            <div
+              class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6"
+            >
+              <div
+                class="flex items-center justify-between pb-4 border-b border-outline-variant/60"
+              >
+                <div>
+                  <h3 class="text-headline-sm font-headline-sm text-on-surface">
+                    Saluran Lamaran Paling Efektif
+                  </h3>
+                  <p class="text-body-sm font-body-sm text-secondary mt-0.5">
+                    Performa dan respon berdasarkan platform yang Anda gunakan
+                  </p>
+                </div>
+                <span
+                  class="text-label-sm font-label-sm text-secondary font-mono-code"
+                  >4 Saluran Aktif</span
+                >
+              </div>
+              <div class="overflow-x-auto mt-4">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr
+                      class="border-b border-outline-variant/80 text-[11px] font-mono-code uppercase text-secondary tracking-wider"
+                    >
+                      <th class="py-2.5 font-medium">Platform / Saluran</th>
+                      <th class="py-2.5 font-medium">Lamaran</th>
+                      <th class="py-2.5 font-medium">Interview</th>
+                      <th class="py-2.5 font-medium">Tawaran</th>
+                      <th class="py-2.5 font-medium">Respon</th>
+                      <th class="py-2.5 font-medium text-right">
+                        Tingkat Respon
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    class="divide-y divide-outline-variant/30 text-body-sm font-body-sm"
+                  >
+                    <tr
+                      class="hover:bg-surface-container-low transition-colors"
+                    >
+                      <td
+                        class="py-3 font-medium text-on-surface flex items-center gap-2"
+                      >
+                        <span
+                          class="material-symbols-outlined text-[16px] text-primary"
+                          data-icon="hub"
+                          >hub</span
+                        ><span>LinkedIn Job Board</span>
+                      </td>
+                      <td class="py-3 font-mono-code">24</td>
+                      <td class="py-3 font-mono-code">7</td>
+                      <td
+                        class="py-3 font-mono-code font-semibold text-primary"
+                      >
+                        1
+                      </td>
+                      <td class="py-3 font-mono-code font-medium">50.0%</td>
+                      <td class="py-3 text-right">
+                        <div
+                          class="w-24 h-2 bg-surface-container-low rounded-full ml-auto overflow-hidden"
+                        >
+                          <div
+                            class="h-full bg-primary-container"
+                            style="width: 50%"
+                          ></div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-surface-container-low transition-colors"
+                    >
+                      <td
+                        class="py-3 font-medium text-on-surface flex items-center gap-2"
+                      >
+                        <span
+                          class="material-symbols-outlined text-[16px] text-tertiary"
+                          data-icon="groups"
+                          >groups</span
+                        ><span>Referral / Rekomendasi Teman</span>
+                      </td>
+                      <td class="py-3 font-mono-code">6</td>
+                      <td class="py-3 font-mono-code">4</td>
+                      <td
+                        class="py-3 font-mono-code font-semibold text-primary"
+                      >
+                        1
+                      </td>
+                      <td class="py-3 font-mono-code font-medium">83.3%</td>
+                      <td class="py-3 text-right">
+                        <div
+                          class="w-24 h-2 bg-surface-container-low rounded-full ml-auto overflow-hidden"
+                        >
+                          <div
+                            class="h-full bg-primary"
+                            style="width: 83%"
+                          ></div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-surface-container-low transition-colors"
+                    >
+                      <td
+                        class="py-3 font-medium text-on-surface flex items-center gap-2"
+                      >
+                        <span
+                          class="material-symbols-outlined text-[16px] text-secondary"
+                          data-icon="language"
+                          >language</span
+                        ><span>Website Karir Perusahaan</span>
+                      </td>
+                      <td class="py-3 font-mono-code">12</td>
+                      <td class="py-3 font-mono-code">1</td>
+                      <td class="py-3 font-mono-code text-secondary">0</td>
+                      <td class="py-3 font-mono-code text-secondary">25.0%</td>
+                      <td class="py-3 text-right">
+                        <div
+                          class="w-24 h-2 bg-surface-container-low rounded-full ml-auto overflow-hidden"
+                        >
+                          <div
+                            class="h-full bg-secondary"
+                            style="width: 25%"
+                          ></div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-surface-container-low transition-colors"
+                    >
+                      <td
+                        class="py-3 font-medium text-on-surface flex items-center gap-2"
+                      >
+                        <span
+                          class="material-symbols-outlined text-[16px] text-secondary"
+                          data-icon="work"
+                          >work</span
+                        ><span>Job Portal Lainnya</span>
+                      </td>
+                      <td class="py-3 font-mono-code">6</td>
+                      <td class="py-3 font-mono-code">0</td>
+                      <td class="py-3 font-mono-code text-secondary">0</td>
+                      <td class="py-3 font-mono-code text-secondary">16.7%</td>
+                      <td class="py-3 text-right">
+                        <div
+                          class="w-24 h-2 bg-surface-container-low rounded-full ml-auto overflow-hidden"
+                        >
+                          <div
+                            class="h-full bg-outline-variant"
+                            style="width: 17%"
+                          ></div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <!-- ======================= RIGHT COLUMN (40% / col-span-5) ================ -->
+          <div class="lg:col-span-5 space-y-6">
+            <!-- Status Distribution Breakdown (Segmented Donut View) -->
+            <div
+              class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6"
+            >
+              <div
+                class="flex items-center justify-between pb-4 border-b border-outline-variant/60"
+              >
+                <h3 class="text-headline-sm font-headline-sm text-on-surface">
+                  Status Lamaran Saat Ini
+                </h3>
+                <span
+                  class="text-label-sm font-label-sm font-mono-code text-primary bg-surface-container-high px-2 py-0.5 rounded"
+                  >48 Total</span
+                >
+              </div>
+              <div class="flex items-center gap-6 pt-5">
+                <div
+                  class="relative w-36 h-36 flex-shrink-0 flex items-center justify-center"
+                >
+                  <div
+                    class="w-full h-full rounded-full border border-outline-variant/40"
+                    style="
+                      background: conic-gradient(
+                        #4f46e5 0% 37.5%,
+                        #3525cd 37.5% 52%,
+                        #006693 52% 64.5%,
+                        #004d70 64.5% 68.7%,
+                        #ba1a1a 68.7% 89.5%,
+                        #c7c4d8 89.5% 100%
+                      );
+                    "
+                  ></div>
+                  <div
+                    class="absolute inset-4 rounded-full bg-surface-container-lowest flex flex-col items-center justify-center shadow-xs"
+                  >
+                    <span
+                      class="text-headline-md font-headline-md font-bold text-on-surface"
+                      >48</span
+                    ><span
+                      class="text-[10px] font-mono-code text-secondary uppercase tracking-tight"
+                      >Lamaran</span
+                    >
+                  </div>
+                </div>
+                <div class="flex-1 space-y-1.5 text-body-sm font-body-sm">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="w-2.5 h-2.5 rounded-full bg-primary-container"
+                      ></span
+                      ><span class="text-secondary">Aktif Diproses</span>
+                    </div>
+                    <span class="font-mono-code font-medium text-on-surface"
+                      >18
+                      <span class="text-secondary text-[11px]"
+                        >(37.5%)</span
+                      ></span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="w-2.5 h-2.5 rounded-full bg-primary"></span
+                      ><span class="text-secondary">Menunggu Kabar</span>
+                    </div>
+                    <span class="font-mono-code font-medium text-on-surface"
+                      >7
+                      <span class="text-secondary text-[11px]"
+                        >(14.5%)</span
+                      ></span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="w-2.5 h-2.5 rounded-full bg-tertiary-container"
+                      ></span
+                      ><span class="text-secondary">Tahap Interview</span>
+                    </div>
+                    <span class="font-mono-code font-medium text-on-surface"
+                      >6
+                      <span class="text-secondary text-[11px]"
+                        >(12.5%)</span
+                      ></span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span
+                      ><span class="text-secondary">Tawaran Kerja (Offer)</span>
+                    </div>
+                    <span class="font-mono-code font-semibold text-primary"
+                      >2
+                      <span class="text-secondary text-[11px]"
+                        >(4.2%)</span
+                      ></span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="w-2.5 h-2.5 rounded-full bg-error"></span
+                      ><span class="text-secondary">Belum Berhasil</span>
+                    </div>
+                    <span class="font-mono-code font-medium text-on-surface"
+                      >10
+                      <span class="text-secondary text-[11px]"
+                        >(20.8%)</span
+                      ></span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="w-2.5 h-2.5 rounded-full bg-outline-variant"
+                      ></span
+                      ><span class="text-secondary">Disimpan / Draft</span>
+                    </div>
+                    <span class="font-mono-code font-medium text-on-surface"
+                      >5
+                      <span class="text-secondary text-[11px]"
+                        >(10.4%)</span
+                      ></span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Stage Velocity & Average Response Duration -->
+            <div
+              class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6"
+            >
+              <div
+                class="flex items-center justify-between pb-4 border-b border-outline-variant/60"
+              >
+                <div>
+                  <h3 class="text-headline-sm font-headline-sm text-on-surface">
+                    Kecepatan Kabar Balik
+                  </h3>
+                  <p class="text-body-sm font-body-sm text-secondary mt-0.5">
+                    Rata-rata hari menunggu respon recruiter di setiap tahapan
+                  </p>
+                </div>
+                <span
+                  class="material-symbols-outlined text-[18px] text-secondary"
+                  data-icon="pace"
+                  >pace</span
+                >
+              </div>
+              <div class="mt-4 space-y-3.5">
+                <div>
+                  <div
+                    class="flex justify-between text-body-sm font-body-sm mb-1"
+                  >
+                    <span class="text-on-surface font-medium"
+                      >Respon Seleksi Berkas / HR Call</span
+                    ><span
+                      class="font-mono-code text-mono-code font-semibold text-on-surface"
+                      >4.2 hari</span
+                    >
+                  </div>
+                  <div
+                    class="h-2 w-full bg-surface-container-low rounded-full overflow-hidden"
+                  >
+                    <div
+                      class="h-full bg-primary-container rounded-full"
+                      style="width: 42%"
+                    ></div>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    class="flex justify-between text-body-sm font-body-sm mb-1"
+                  >
+                    <span class="text-on-surface font-medium"
+                      >Jadwal Tes Teknis / Portfolio Review</span
+                    ><span
+                      class="font-mono-code text-mono-code font-semibold text-on-surface"
+                      >7.5 hari</span
+                    >
+                  </div>
+                  <div
+                    class="h-2 w-full bg-surface-container-low rounded-full overflow-hidden"
+                  >
+                    <div
+                      class="h-full bg-primary rounded-full"
+                      style="width: 75%"
+                    ></div>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    class="flex justify-between text-body-sm font-body-sm mb-1"
+                  >
+                    <span class="text-on-surface font-medium"
+                      >Hasil Interview Akhir &amp; Negosiasi</span
+                    ><span
+                      class="font-mono-code text-mono-code font-semibold text-on-surface"
+                      >10.1 hari</span
+                    >
+                  </div>
+                  <div
+                    class="h-2 w-full bg-surface-container-low rounded-full overflow-hidden"
+                  >
+                    <div
+                      class="h-full bg-tertiary-container rounded-full"
+                      style="width: 100%"
+                    ></div>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    class="flex justify-between text-body-sm font-body-sm mb-1"
+                  >
+                    <span class="text-on-surface font-medium"
+                      >Penerbitan Surat Penawaran Resmi</span
+                    ><span
+                      class="font-mono-code text-mono-code font-semibold text-on-surface"
+                      >5.0 hari</span
+                    >
+                  </div>
+                  <div
+                    class="h-2 w-full bg-surface-container-low rounded-full overflow-hidden"
+                  >
+                    <div
+                      class="h-full bg-secondary rounded-full"
+                      style="width: 50%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Key Actionable Takeaways & AI Recommendation Card -->
+            <div
+              class="bg-gradient-to-br from-surface-container-high/60 to-surface-container-lowest border border-primary-container/30 rounded-xl p-5 shadow-2xs"
+            >
+              <div class="flex items-center gap-2 mb-2">
+                <span
+                  class="material-symbols-outlined text-primary text-[20px]"
+                  data-icon="auto_awesome"
+                  >auto_awesome</span
+                >
+                <h4
+                  class="text-headline-sm font-headline-sm text-primary font-bold"
+                >
+                  Tips Peningkatan Kinerja Lamaran
+                </h4>
+              </div>
+              <p
+                class="text-body-sm font-body-sm text-on-surface leading-relaxed"
+              >
+                <strong class="font-semibold text-primary"
+                  >Rekomendasi Utama:</strong
+                >
+                Jalur Referral memberikan respon tertinggi (83.3%). Ada 3
+                lamaran yang sudah &gt;5 hari belum direspon—segera kirim
+                follow-up sopan ke recruiter untuk menaikkan peluang panggilan.
+              </p>
+              <div
+                class="mt-4 pt-3 border-t border-primary-container/20 flex items-center justify-between"
+              >
+                <span class="text-mono-code text-mono-code text-secondary"
+                  >Diperbarui 2 jam lalu</span
+                ><button
+                  class="inline-flex items-center gap-1 text-label-sm font-label-sm font-semibold text-primary hover:text-primary-container transition-colors"
+                >
+                  <span>Lihat 3 Lamaran Perlu Follow-up</span
+                  ><span
+                    class="material-symbols-outlined text-[14px]"
+                    data-icon="arrow_forward"
+                    >arrow_forward</span
+                  >
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

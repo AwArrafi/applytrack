@@ -6,7 +6,7 @@ import { useI18n } from "@/components/I18nProvider";
 import { Card } from "@/components/ui/Card";
 import { APPLICATION_STATUSES } from "@/lib/constants";
 import type { Application } from "@/lib/types";
-import { Field, inputClass, WorkArrangementField } from "./fields";
+import { Field, inputClass, SourceField, WorkArrangementField } from "./fields";
 
 const INITIAL_STATE: SaveState = { ok: false, errors: {} };
 
@@ -82,9 +82,12 @@ export function EditApplicationForm({ application: app }: { application: Applica
             </Field>
           </div>
 
-          <Field label={t.applicationForm.jobUrl} htmlFor="edit-url" errors={errors.job_url}>
-            <input id="edit-url" name="job_url" type="url" defaultValue={app.job_url} placeholder="https://..." className={inputClass} />
-          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <SourceField id="edit-source" defaultValue={app.source} errors={errors.source} />
+            <Field label={t.applicationForm.jobUrl} htmlFor="edit-url" errors={errors.job_url}>
+              <input id="edit-url" name="job_url" type="url" defaultValue={app.job_url} placeholder="https://..." className={inputClass} />
+            </Field>
+          </div>
 
           <Field label={t.applicationForm.description} htmlFor="edit-description" errors={errors.job_description}>
             <textarea id="edit-description" name="job_description" rows={4} defaultValue={app.job_description} className={`${inputClass} h-auto py-2`} />
