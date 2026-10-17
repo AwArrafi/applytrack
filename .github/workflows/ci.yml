@@ -36,7 +36,7 @@ jobs:
       # The production settings force HTTPS, which the test client doesn't speak.
       DJANGO_DEBUG: "True"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
@@ -66,7 +66,7 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
         with:
           node-version: 24
@@ -90,7 +90,7 @@ jobs:
       DJANGO_DEBUG: "True"
       API_URL: http://127.0.0.1:8001/api
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
