@@ -186,3 +186,38 @@ class PasswordResetTests(APITestCase):
         )
         self.assertEqual(right.status_code, 200)
         self.assertEqual(list(Token.objects.filter(user=self.user).values_list('key', flat=True)), [right.json()['token']])
+
+
+class DeleteAccountTests(APITestCase):
+    def setUp(self):
+        from applications.models import Application, ForwardedEmail, Interview, StatusChange
+        self.models = [Application, Interview, StatusChange, ForwardedEmail]
+        self.user = User.objects.create_user('leaving@example.com', 'a-strong-pass-123')
+        self.other = User.objects.create_user('staying@example.com', 'a-strong-pass-123')
+        for owner in (self.user, self.other):
+            app = Application.objects.create(user=owner, company_name='Acme', job_title='Dev')
+            Interview.objects.create(application=app, scheduled_at=timezone.now())
+            ForwardedEmail.objects.create(user=owner, message_id='<m@x>', outcome='created', application=app)
+        self.token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
+
+    def delete(self, password):
+        return self.client.post('/api/auth/delete-account/', {'password': password}, format='json')
+
+    def test_wrong_password_keeps_everything(self):
+        response = self.delete('not-my-password')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('password', response.json())
+        self.assertTrue(User.objects.filter(pk=self.user.pk).exists())
+
+    def test_deletes_the_user_and_all_their_data_but_nobody_elses(self):
+        self.assertEqual(self.delete('a-strong-pass-123').status_code, 204)
+        self.assertFalse(User.objects.filter(email='leaving@example.com').exists())
+        self.assertFalse(Token.objects.filter(key=self.token.key).exists())
+        for model in self.models:  # one row of each left: the other user's
+            self.assertEqual(model.objects.count(), 1, model.__name__)
+        self.assertEqual(self.client.get('/api/auth/me/').status_code, 401)  # the session is gone too
+
+    def test_needs_a_session(self):
+        self.client.credentials()
+        self.assertEqual(self.delete('a-strong-pass-123').status_code, 401)
