@@ -2,6 +2,7 @@ import Form from "next/form";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ApplicationsTable } from "@/components/applications/ApplicationsTable";
+import { ImportEmailDialog } from "@/components/applications/ImportEmailDialog";
 import { Card } from "@/components/ui/Card";
 import { SearchIcon } from "@/components/ui/icons";
 import { Pager } from "@/components/ui/Pager";
@@ -50,9 +51,12 @@ export default async function ApplicationsPage({ searchParams }: PageProps<"/[la
   const { t } = await getServerI18n();
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-[1.75rem]">{t.applications.title}</h1>
-        <p className="mt-1 text-sm text-ink-muted">{t.applications.description}</p>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-[1.75rem]">{t.applications.title}</h1>
+          <p className="mt-1 text-sm text-ink-muted">{t.applications.description}</p>
+        </div>
+        <ImportEmailDialog />
       </header>
 
       {/* Reading the URL happens at request time, so it streams in behind this boundary. */}

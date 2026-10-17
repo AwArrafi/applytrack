@@ -68,7 +68,8 @@ class Application(models.Model):
     class Meta:
         ordering = ['-updated_at']
         # The applications list and dashboard read "this user's, newest first".
-        indexes = [models.Index(fields=['user', '-updated_at'])]
+        # Analytics and the weekly charts filter on application_date.
+        indexes = [models.Index(fields=['user', '-updated_at']), models.Index(fields=['user', 'application_date'])]
 
     def __str__(self):
         return f'{self.job_title} at {self.company_name}'
@@ -149,6 +150,40 @@ class Interview(models.Model):
 
     class Meta:
         ordering = ['scheduled_at']
+        # The calendar and upcoming list read interviews by date.
+        indexes = [models.Index(fields=['application', 'scheduled_at'])]
 
     def __str__(self):
         return f'{self.get_interview_type_display()} with {self.application.company_name}'
+
+
+class ForwardedEmail(models.Model):
+    """An email a job portal sent the user that reached ApplyTrack through their forwarding address.
+
+    Only metadata and the outcome are kept, never the body. The (user, message_id) pair makes
+    a provider's retry of the same email a no-op.
+    """
+
+    class Outcome(models.TextChoices):
+        CREATED = 'created', 'Application created'
+        UPDATED = 'updated', 'Application updated'
+        UNCHANGED = 'unchanged', 'Already up to date'
+        UNRECOGNIZED = 'unrecognized', 'Not recognised'
+        GMAIL_CONFIRMATION = 'gmail_confirmation', 'Gmail forwarding confirmation'
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='forwarded_emails')
+    message_id = models.CharField(max_length=255)  # the Message-ID header, or a hash of the email
+    sender = models.CharField(max_length=254, blank=True)
+    subject = models.CharField(max_length=255, blank=True)
+    received_at = models.DateTimeField(auto_now_add=True)
+    outcome = models.CharField(max_length=20, choices=Outcome)
+    application = models.ForeignKey(Application, null=True, blank=True, on_delete=models.SET_NULL)
+    # Gmail sends a code to the forwarding address before it starts forwarding; shown in Settings.
+    confirmation_code = models.CharField(max_length=32, blank=True)
+
+    class Meta:
+        ordering = ['-received_at']
+        constraints = [models.UniqueConstraint(fields=['user', 'message_id'], name='unique_forwarded_email')]
+
+    def __str__(self):
+        return f'{self.user}: {self.subject or self.message_id} ({self.outcome})'

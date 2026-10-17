@@ -52,3 +52,11 @@ msgstr "Tautan ini tidak valid atau sudah kedaluwarsa."
 
 msgid "Your current password is incorrect."
 msgstr "Kata sandi saat ini salah."
+
+msgid "Paste the full text of the email."
+msgstr "Tempelkan seluruh isi email."
+
+msgid ""
+"This email is not one ApplyTrack recognises yet. For now, only JobStreet emails "
+"can be read."
+msgstr "Email ini belum dapat dikenali. Untuk sementara, ApplyTrack hanya bisa membaca email dari JobStreet."

@@ -260,6 +260,23 @@ export const en: Dictionary = {
     notFoundText: "The page you're looking for doesn't exist or was deleted.",
     backToDashboard: "Back to dashboard",
   },
+  importEmail: {
+    button: "Import from email",
+    title: "Import from a job email",
+    description:
+      "Paste an email from a job portal, such as an application confirmation or a hiring decision. ApplyTrack records the new application or updates its status.",
+    label: "Email text",
+    placeholder: "Copy the whole email and paste it here…",
+    supportedTitle: "For now, JobStreet emails only",
+    supported:
+      "Emails from LinkedIn, Glints, Kalibrr, and other portals can't be read yet. Record those applications with the Add Application button.",
+    submit: "Import",
+    importing: "Importing…",
+    created: (job, company) => `New application recorded: ${job} at ${company}.`,
+    updated: (job, company, status) => `${job} at ${company} is now "${status}".`,
+    unchanged: (job, company) => `${job} at ${company} is already up to date.`,
+    another: "Import another email",
+  },
   source: {
     linkedin: "LinkedIn",
     jobstreet: "JobStreet",
@@ -325,6 +342,31 @@ export const en: Dictionary = {
     tipNone: "Keep logging every application and its status changes. Suggestions show up once there is enough data.",
     followUpLink: (count) => `See ${count} applications to follow up`,
   },
+  forwarding: {
+    title: "Automatic import from email",
+    description:
+      "Forward job portal emails to your private address. New applications and status changes are recorded automatically.",
+    notActive:
+      "This turns on once ApplyTrack runs on its own domain. Until then, use the Import from email button on the Applications page.",
+    yourAddress: "Your forwarding address",
+    addressHint: "Keep this address private. Anything sent to it is read as one of your job emails.",
+    copy: "Copy",
+    copied: "Copied",
+    setupTitle: "Set it up in Gmail (once)",
+    step1: "In Gmail, open Settings → See all settings → Forwarding and POP/IMAP → Add a forwarding address, and enter the address above.",
+    step2: "Gmail sends a confirmation code to ApplyTrack. Enter this code in Gmail:",
+    waitingForCode: "Waiting for Gmail's code… reload this page after step 1.",
+    step3: "Create a filter: Settings → Filters and Blocked Addresses → Create a new filter. In From, enter:",
+    step3After: "Then choose Create filter → tick Forward it to → pick your ApplyTrack address.",
+    recentTitle: "Recently received emails",
+    recentEmpty: "No emails received yet.",
+    outcome: {
+      created: "New application",
+      updated: "Status updated",
+      unchanged: "Already recorded",
+      unrecognized: "Not recognised",
+    },
+  },
   settings: {
     title: "Settings",
     description: "Manage your profile and account preferences.",
@@ -352,6 +394,8 @@ export const en: Dictionary = {
     pageOf: (page, pages) => `Page ${page} of ${pages}`,
   },
   auth: {
+    showPassword: "Show password",
+    hidePassword: "Hide password",
     loginTitle: "Sign in to ApplyTrack",
     loginDescription: "Pick up where you left off with your job search.",
     registerTitle: "Create your ApplyTrack account",

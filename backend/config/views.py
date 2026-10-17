@@ -9,6 +9,7 @@ class HealthView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
+    throttle_classes = []  # the host polls this; it must never get a 429
 
     def get(self, request):
         connection.ensure_connection()  # raises (-> 500) when the database is down

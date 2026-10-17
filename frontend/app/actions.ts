@@ -3,9 +3,10 @@
 import { refresh } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { apiHeaders, apiUrl } from "@/lib/api";
+import { API_TIMEOUT_MS, apiHeaders, apiUrl } from "@/lib/api";
 import { DEFAULT_LOCALE, getI18n, isLocale, LOCALE_COOKIE, type Locale } from "@/lib/i18n";
 import { clearSessionToken, getSessionToken, setSessionToken } from "@/lib/session";
+import type { Application } from "@/lib/types";
 
 // Server Actions can't read the [lang] route segment, so they use the same cookie proxy.ts reads.
 async function currentI18n() {
@@ -58,8 +59,9 @@ async function callApi(method: "POST" | "PATCH" | "DELETE", path: string, payloa
   try {
     response = await fetch(`${apiUrl()}${path}`, {
       method,
-      headers: { ...apiHeaders(await getSessionToken(), locale), "Content-Type": "application/json" },
+      headers: { ...(await apiHeaders(await getSessionToken(), locale)), "Content-Type": "application/json" },
       body: payload ? JSON.stringify(payload) : undefined,
+      signal: AbortSignal.timeout(API_TIMEOUT_MS), // a timeout counts as unreachable
     });
   } catch {
     return null;
@@ -177,6 +179,21 @@ export async function logout() {
   if (await getSessionToken()) await callApi("POST", "/auth/logout/");
   await clearSessionToken();
   redirect("/login");
+}
+
+export interface ImportState extends SaveState {
+  result?: "created" | "updated" | "unchanged";
+  application?: Application;
+}
+
+/** Records or updates an application from a pasted job portal email (see backend email_import.py). */
+export async function importEmail(_previous: ImportState, formData: FormData): Promise<ImportState> {
+  const { t } = await currentI18n();
+  const response = await callApi("POST", "/applications/import-email/", { text: formData.get("text") });
+  const state = await toSaveState(response, t.errors.saveFailed);
+  if (!state.ok || !response) return state;
+  refresh(); // the list and counts change
+  return { ...state, ...(await response.json()) };
 }
 
 /** Asks Django to email a reset link. Same answer whether or not the email has an account. */

@@ -162,3 +162,18 @@ export interface Analytics {
   response_times: { stage: ResponseStage; avg_days: number | null; samples: number }[];
   follow_up: { count: number; after_days: number };
 }
+
+/** GET /email-forwarding/: the Settings page's automatic-import card. */
+export interface EmailForwarding {
+  /** null until the server has a domain for incoming mail. */
+  address: string | null;
+  gmail_confirmation: { code: string; received_at: string } | null;
+  recent: {
+    id: number;
+    sender: string;
+    subject: string;
+    received_at: string;
+    outcome: "created" | "updated" | "unchanged" | "unrecognized";
+    application: { id: number; company_name: string; job_title: string } | null;
+  }[];
+}

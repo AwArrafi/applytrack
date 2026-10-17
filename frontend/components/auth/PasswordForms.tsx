@@ -6,6 +6,7 @@ import { changePassword, requestPasswordReset, resetPassword, type SaveState } f
 import { Field, inputClass } from "@/components/applications/fields";
 import { useI18n } from "@/components/I18nProvider";
 import { Card } from "@/components/ui/Card";
+import { PasswordInput } from "./PasswordInput";
 
 const INITIAL_STATE: SaveState = { ok: false, errors: {} };
 type Action = (previous: SaveState, formData: FormData) => Promise<SaveState>;
@@ -63,16 +64,7 @@ export function ConfirmPasswordField({ id, name, mismatch, onChange }: { id: str
   const { t } = useI18n();
   return (
     <Field label={t.auth.confirmPassword} htmlFor={id} errors={mismatch ? [t.auth.passwordMismatch] : undefined}>
-      <input
-        id={id}
-        name={name}
-        type="password"
-        required
-        autoComplete="new-password"
-        aria-invalid={mismatch}
-        onChange={onChange}
-        className={inputClass}
-      />
+      <PasswordInput id={id} name={name} required autoComplete="new-password" aria-invalid={mismatch} onChange={onChange} />
     </Field>
   );
 }
@@ -152,15 +144,13 @@ export function ResetPasswordForm({ uid, token }: { uid: string; token: string }
           <input type="hidden" name="uid" value={uid} />
           <input type="hidden" name="token" value={token} />
           <Field label={a.newPassword} htmlFor="reset-password" errors={state.errors.password}>
-            <input
+            <PasswordInput
               id="reset-password"
               name="password"
-              type="password"
               required
               minLength={8}
               autoComplete="new-password"
               aria-describedby="reset-password-hint"
-              className={inputClass}
             />
             <p id="reset-password-hint" className="mt-1 text-xs text-ink-subtle">{a.passwordHint}</p>
           </Field>
@@ -190,11 +180,11 @@ export function ChangePasswordForm() {
     <Card title={a.changeTitle} description={a.changeHint}>
       <form ref={formRef} onSubmit={onSubmit} className="space-y-4">
         <Field label={a.currentPassword} htmlFor="change-current" errors={state.errors.current_password}>
-          <input id="change-current" name="current_password" type="password" required autoComplete="current-password" className={`${inputClass} sm:max-w-[calc(50%-0.5rem)]`} />
+          <PasswordInput id="change-current" name="current_password" required autoComplete="current-password" className="sm:max-w-[calc(50%-0.5rem)]" />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={a.newPassword} htmlFor="change-new" errors={state.errors.new_password}>
-            <input id="change-new" name="new_password" type="password" required minLength={8} autoComplete="new-password" className={inputClass} />
+            <PasswordInput id="change-new" name="new_password" required minLength={8} autoComplete="new-password" />
           </Field>
           <ConfirmPasswordField id="change-new-confirm" name="new_password_confirm" mismatch={mismatch} onChange={clearMismatch} />
         </div>

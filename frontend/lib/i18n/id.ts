@@ -261,6 +261,24 @@ export const id = {
     notFoundText: "Halaman yang Anda cari tidak ada atau sudah dihapus.",
     backToDashboard: "Kembali ke dasbor",
   },
+  importEmail: {
+    button: "Impor dari email",
+    title: "Impor dari email lamaran",
+    description:
+      "Tempelkan isi email dari portal kerja, misalnya konfirmasi lamaran terkirim atau hasil seleksi. ApplyTrack akan mencatat lamaran baru atau memperbarui statusnya.",
+    label: "Isi email",
+    placeholder: "Salin seluruh isi email, lalu tempel di sini…",
+    supportedTitle: "Untuk sementara, hanya email dari JobStreet",
+    supported:
+      "Email dari LinkedIn, Glints, Kalibrr, dan portal lain belum bisa dibaca. Catat lamaran dari portal tersebut dengan tombol Tambah Lamaran.",
+    submit: "Impor",
+    importing: "Mengimpor…",
+    created: (job: string, company: string) => `Lamaran baru dicatat: ${job} di ${company}.`,
+    updated: (job: string, company: string, status: string) =>
+      `Status lamaran ${job} di ${company} diperbarui menjadi "${status}".`,
+    unchanged: (job: string, company: string) => `${job} di ${company} sudah tercatat dengan status terbaru.`,
+    another: "Impor email lain",
+  },
   source: {
     linkedin: "LinkedIn",
     jobstreet: "JobStreet",
@@ -326,6 +344,31 @@ export const id = {
     tipNone: "Terus catat setiap lamaran dan perubahan statusnya. Saran akan muncul begitu datanya cukup.",
     followUpLink: (count: number) => `Lihat ${count} lamaran yang perlu ditindaklanjuti`,
   },
+  forwarding: {
+    title: "Impor otomatis dari email",
+    description:
+      "Teruskan email dari portal kerja ke alamat khusus Anda. Lamaran baru dan perubahan statusnya akan tercatat otomatis.",
+    notActive:
+      "Fitur ini aktif setelah ApplyTrack online dengan domain sendiri. Sementara itu, gunakan tombol Impor dari email di halaman Lamaran.",
+    yourAddress: "Alamat penerusan Anda",
+    addressHint: "Rahasiakan alamat ini. Email yang dikirim ke sini akan dibaca sebagai email lamaran Anda.",
+    copy: "Salin",
+    copied: "Tersalin",
+    setupTitle: "Cara mengatur di Gmail (sekali saja)",
+    step1: "Di Gmail, buka Setelan → Lihat semua setelan → Penerusan dan POP/IMAP → Tambahkan alamat penerusan, lalu masukkan alamat di atas.",
+    step2: "Gmail mengirim kode konfirmasi ke ApplyTrack. Masukkan kode ini di Gmail:",
+    waitingForCode: "Menunggu kode dari Gmail… muat ulang halaman ini setelah langkah 1.",
+    step3: "Buat filter: Setelan → Filter dan Alamat yang Diblokir → Buat filter baru. Pada kolom Dari, isi:",
+    step3After: "Lalu pilih Buat filter → centang Teruskan ke → pilih alamat ApplyTrack Anda.",
+    recentTitle: "Email yang baru diterima",
+    recentEmpty: "Belum ada email yang diterima.",
+    outcome: {
+      created: "Lamaran baru",
+      updated: "Status diperbarui",
+      unchanged: "Sudah tercatat",
+      unrecognized: "Tidak dikenali",
+    },
+  },
   settings: {
     title: "Pengaturan",
     description: "Atur profil dan preferensi akun Anda.",
@@ -353,6 +396,8 @@ export const id = {
     pageOf: (page: number, pages: number) => `Halaman ${page} dari ${pages}`,
   },
   auth: {
+    showPassword: "Tampilkan kata sandi",
+    hidePassword: "Sembunyikan kata sandi",
     loginTitle: "Masuk ke ApplyTrack",
     loginDescription: "Lanjutkan memantau lamaran kerja Anda.",
     registerTitle: "Buat akun ApplyTrack",

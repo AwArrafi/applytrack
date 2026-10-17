@@ -8,10 +8,14 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 from rest_framework.views import APIView
 
+from config.throttling import ScopedRateThrottle
+
 from .models import Application, Interview
-from .analytics import build_analytics
+from .analytics import build_analytics, weekly_activity
+from .email_import import import_email as apply_portal_email
 from .pagination import StandardPagination
 from .serializers import ApplicationSerializer, InterviewSerializer
 
@@ -28,6 +32,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
 
     serializer_class = ApplicationSerializer
     pagination_class = StandardPagination
+    throttle_scope = 'import'  # only used by import-email, the one action with ScopedRateThrottle
 
     def get_queryset(self):
         queryset = Application.objects.owned_by(self.request.user)
@@ -50,6 +55,18 @@ class ApplicationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['post'], url_path='import-email',
+            throttle_classes=[UserRateThrottle, ScopedRateThrottle])
+    def import_email(self, request):
+        """Adds or updates an application from a job portal email's text (e.g. JobStreet's)."""
+        text = request.data.get('text')
+        if not isinstance(text, str) or not text.strip() or len(text) > 50_000:
+            raise ValidationError({'text': [_('Paste the full text of the email.')]})
+        result, application = apply_portal_email(request.user, text)
+        if result is None:
+            raise ValidationError({'text': [_('This email is not one ApplyTrack recognises yet. For now, only JobStreet emails can be read.')]})
+        return Response({'result': result, 'application': ApplicationSerializer(application).data})
 
     @action(detail=False)
     def choices(self, request):
@@ -151,28 +168,8 @@ class DashboardView(APIView):
             'status_counts': status_counts,
             'upcoming_interviews': InterviewSerializer(upcoming[:4], many=True).data,
             'recent_applications': ApplicationSerializer(applications.order_by('-updated_at')[:6], many=True).data,
-            'weekly_activity': weekly_activity(applications, today, weeks=5),
+            'weekly_activity': weekly_activity(request.user, today, weeks=5),
         })
-
-
-def weekly_activity(applications, today, weeks):
-    """Applications sent and responses received per week, oldest week first, the last ending today.
-
-    The updated_at of a responded application stands in for its response date.
-    shortcut: approximate, upgrade by storing a status history if the chart needs to be exact.
-    """
-    result = []
-    for weeks_back in range(weeks - 1, -1, -1):
-        start = today - timedelta(days=7 * weeks_back + 6)
-        end = start + timedelta(days=6)
-        result.append({
-            'week_start': start.isoformat(),
-            'submitted': applications.filter(application_date__range=(start, end)).count(),
-            'responses': applications.filter(
-                status__in=RESPONDED_STATUSES, updated_at__date__range=(start, end)
-            ).count(),
-        })
-    return result
 
 
 # Periods the Analytics page offers; anything else falls back to the default.

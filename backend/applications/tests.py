@@ -401,3 +401,107 @@ class AnalyticsTests(SignedInTestCase):
         kpis = self.get('all')['kpis']
         self.assertEqual((kpis['applications']['value'], kpis['applications']['previous']), (6, None))
         self.assertEqual(self.get('nonsense')['period']['days'], 30)
+
+
+JOBSTREET_REJECTION = """Hai,
+Terima kasih sudah melamar posisi Developer Front & Back End di PT WOORI FINANCE INDONESIA TBK. Kami mendapat informasi dari perusahaan bahwa lamaranmu kali ini belum dapat dilanjutkan ke tahap berikutnya.
+Kami mengerti melamar kerja membutuhkan waktu dan usaha, jadi kami paham kalau kabar ini mungkin mengecewakan. Kamu bisa melihat lowongan lainnya di bawah ini atau memantau lamaran yang sedang diproses.
+Developer Front & Back End
+PT WOORI FINANCE INDONESIA TBK
+
+Dilamar pada 13 Oct
+
+Wawasan lamaran kerja
+Lebih dari 100 kandidat melamar pekerjaan ini.
+Budi, apakah Anda memiliki ini? Perbarui Profil Jobstreet Anda agar lebih menonjol.
+Sumber: Saran Karir Jobstreet
+"""
+
+
+JOBSTREET_APPLIED = """Hai Budi,
+Lamaranmu untuk posisi Full Stack Web Developer berhasil dikirim ke Jual Emas Indonesia.
+Setiap perusahaan punya proses rekrutmen yang berbeda, jadi mungkin tidak semua pelamar akan dihubungi. Cek terus lamaranmu dan temukan lowongan lainnya di bawah ini.
+Full Stack Web Developer
+Jual Emas Indonesia
+
+Dilamar pada 14 Oct
+"""
+
+
+class EmailImportTests(SignedInTestCase):
+    def import_text(self, text=JOBSTREET_REJECTION):
+        return self.client.post('/api/applications/import-email/', {'text': text}, format='json')
+
+    def test_parses_a_jobstreet_confirmation(self):
+        from .email_import import parse_email
+
+        parsed = parse_email(JOBSTREET_APPLIED, today=date(2026, 10, 16))
+        self.assertEqual(
+            (parsed.source, parsed.company_name, parsed.job_title, parsed.status, parsed.applied_on),
+            ('jobstreet', 'Jual Emas Indonesia', 'Full Stack Web Developer', 'applied', date(2026, 10, 14)),
+        )
+
+    def test_text_copied_from_an_email_client(self):
+        # Copied emails carry non-breaking spaces, zero-width characters and Windows line breaks.
+        from .email_import import parse_email
+
+        messy = (JOBSTREET_APPLIED.replace(' ', ' ').replace('\n', '\r\n')
+                 .replace('Full Stack', '‌Full Stack').replace('Dilamar', 'Dilamar​'))
+        parsed = parse_email(messy, today=date(2026, 10, 16))
+        self.assertEqual((parsed.job_title, parsed.company_name, parsed.status),
+                         ('Full Stack Web Developer', 'Jual Emas Indonesia', 'applied'))
+
+    def test_confirmation_then_rejection_for_the_same_job(self):
+        created = self.import_text(JOBSTREET_APPLIED).json()
+        self.assertEqual((created['result'], created['application']['status']), ('created', 'applied'))
+        app = Application.objects.get(pk=created['application']['id'])
+        self.assertEqual((app.application_date.month, app.application_date.day), (10, 14))
+
+        rejection = JOBSTREET_REJECTION.replace('Developer Front & Back End', 'Full Stack Web Developer').replace(
+            'PT WOORI FINANCE INDONESIA TBK', 'Jual Emas Indonesia'
+        )
+        self.assertEqual(self.import_text(rejection).json()['result'], 'updated')
+        self.assertEqual(
+            list(app.status_changes.values_list('from_status', 'to_status')), [('', 'applied'), ('applied', 'rejected')]
+        )
+
+    def test_parses_a_jobstreet_rejection(self):
+        from .email_import import parse_email
+
+        parsed = parse_email(JOBSTREET_REJECTION, today=date(2026, 10, 16))
+        self.assertEqual(
+            (parsed.source, parsed.company_name, parsed.job_title, parsed.status, parsed.applied_on),
+            ('jobstreet', 'PT WOORI FINANCE INDONESIA TBK', 'Developer Front & Back End', 'rejected', date(2026, 10, 13)),
+        )
+        # In early January, "13 Oct" means last year.
+        self.assertEqual(parse_email(JOBSTREET_REJECTION, today=date(2027, 1, 5)).applied_on, date(2026, 10, 13))
+
+    def test_creates_the_application_with_its_history(self):
+        response = self.import_text()
+        self.assertEqual(response.json()['result'], 'created')
+        app = Application.objects.get(pk=response.json()['application']['id'])
+        self.assertEqual((app.user, app.status, app.source), (self.user, 'rejected', 'jobstreet'))
+        self.assertEqual(
+            list(app.status_changes.values_list('from_status', 'to_status')), [('', 'applied'), ('applied', 'rejected')]
+        )
+        self.assertEqual(timezone.localdate(app.status_changes.first().changed_at), app.application_date)
+
+    def test_updates_a_tracked_application_and_ignores_repeats(self):
+        tracked = self.make_application(company_name='PT Woori Finance Indonesia Tbk', job_title='developer front & back end')
+        self.assertEqual(self.import_text().json(), {'result': 'updated', 'application': self.client.get(
+            f'/api/applications/{tracked.id}/').json()})
+        self.assertEqual(self.import_text().json()['result'], 'unchanged')
+        self.assertEqual(Application.objects.count(), 1)
+
+    def test_never_touches_another_users_application(self):
+        other = User.objects.create_user('other@example.com', 'a-strong-pass-123')
+        theirs = self.make_application(user=other, company_name='PT WOORI FINANCE INDONESIA TBK',
+                                       job_title='Developer Front & Back End')
+        self.assertEqual(self.import_text().json()['result'], 'created')
+        theirs.refresh_from_db()
+        self.assertEqual(theirs.status, 'applied')
+
+    def test_unknown_or_empty_text_is_rejected(self):
+        self.assertIn('text', self.import_text('Halo, ini email biasa.').json())
+        self.assertIn('text', self.import_text('').json())
+        self.assertEqual(self.import_text('x' * 50_001).status_code, 400)
