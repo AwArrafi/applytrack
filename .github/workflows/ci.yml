@@ -37,7 +37,7 @@ jobs:
       DJANGO_DEBUG: "True"
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -91,7 +91,7 @@ jobs:
       API_URL: http://127.0.0.1:8001/api
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
