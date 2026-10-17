@@ -261,6 +261,22 @@ export const id = {
     notFoundText: "Halaman yang Anda cari tidak ada atau sudah dihapus.",
     backToDashboard: "Kembali ke dasbor",
   },
+  importEmail: {
+    button: "Impor dari email",
+    title: "Impor dari email lamaran",
+    description:
+      "Tempelkan isi email dari portal kerja, misalnya konfirmasi lamaran terkirim atau hasil seleksi. ApplyTrack akan mencatat lamaran baru atau memperbarui statusnya.",
+    label: "Isi email",
+    placeholder: "Salin seluruh isi email, lalu tempel di sini…",
+    supported: "Saat ini mendukung email dari JobStreet.",
+    submit: "Impor",
+    importing: "Mengimpor…",
+    created: (job: string, company: string) => `Lamaran baru dicatat: ${job} di ${company}.`,
+    updated: (job: string, company: string, status: string) =>
+      `Status lamaran ${job} di ${company} diperbarui menjadi "${status}".`,
+    unchanged: (job: string, company: string) => `${job} di ${company} sudah tercatat dengan status terbaru.`,
+    another: "Impor email lain",
+  },
   source: {
     linkedin: "LinkedIn",
     jobstreet: "JobStreet",

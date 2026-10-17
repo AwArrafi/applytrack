@@ -260,6 +260,21 @@ export const en: Dictionary = {
     notFoundText: "The page you're looking for doesn't exist or was deleted.",
     backToDashboard: "Back to dashboard",
   },
+  importEmail: {
+    button: "Import from email",
+    title: "Import from a job email",
+    description:
+      "Paste an email from a job portal, such as an application confirmation or a hiring decision. ApplyTrack records the new application or updates its status.",
+    label: "Email text",
+    placeholder: "Copy the whole email and paste it here…",
+    supported: "Currently supports emails from JobStreet.",
+    submit: "Import",
+    importing: "Importing…",
+    created: (job, company) => `New application recorded: ${job} at ${company}.`,
+    updated: (job, company, status) => `${job} at ${company} is now "${status}".`,
+    unchanged: (job, company) => `${job} at ${company} is already up to date.`,
+    another: "Import another email",
+  },
   source: {
     linkedin: "LinkedIn",
     jobstreet: "JobStreet",

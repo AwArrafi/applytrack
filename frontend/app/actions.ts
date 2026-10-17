@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { apiHeaders, apiUrl } from "@/lib/api";
 import { DEFAULT_LOCALE, getI18n, isLocale, LOCALE_COOKIE, type Locale } from "@/lib/i18n";
 import { clearSessionToken, getSessionToken, setSessionToken } from "@/lib/session";
+import type { Application } from "@/lib/types";
 
 // Server Actions can't read the [lang] route segment, so they use the same cookie proxy.ts reads.
 async function currentI18n() {
@@ -177,6 +178,21 @@ export async function logout() {
   if (await getSessionToken()) await callApi("POST", "/auth/logout/");
   await clearSessionToken();
   redirect("/login");
+}
+
+export interface ImportState extends SaveState {
+  result?: "created" | "updated" | "unchanged";
+  application?: Application;
+}
+
+/** Records or updates an application from a pasted job portal email (see backend email_import.py). */
+export async function importEmail(_previous: ImportState, formData: FormData): Promise<ImportState> {
+  const { t } = await currentI18n();
+  const response = await callApi("POST", "/applications/import-email/", { text: formData.get("text") });
+  const state = await toSaveState(response, t.errors.saveFailed);
+  if (!state.ok || !response) return state;
+  refresh(); // the list and counts change
+  return { ...state, ...(await response.json()) };
 }
 
 /** Asks Django to email a reset link. Same answer whether or not the email has an account. */

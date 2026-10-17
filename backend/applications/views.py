@@ -12,6 +12,7 @@ from rest_framework.views import APIView
 
 from .models import Application, Interview
 from .analytics import build_analytics
+from .email_import import import_email as apply_portal_email
 from .pagination import StandardPagination
 from .serializers import ApplicationSerializer, InterviewSerializer
 
@@ -50,6 +51,17 @@ class ApplicationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['post'], url_path='import-email')
+    def import_email(self, request):
+        """Adds or updates an application from a job portal email's text (e.g. JobStreet's)."""
+        text = request.data.get('text')
+        if not isinstance(text, str) or not text.strip() or len(text) > 50_000:
+            raise ValidationError({'text': [_('Paste the full text of the email.')]})
+        result, application = apply_portal_email(request.user, text)
+        if result is None:
+            raise ValidationError({'text': [_('This email is not one ApplyTrack recognises yet.')]})
+        return Response({'result': result, 'application': ApplicationSerializer(application).data})
 
     @action(detail=False)
     def choices(self, request):
