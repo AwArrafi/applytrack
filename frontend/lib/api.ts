@@ -44,7 +44,8 @@ export async function apiGet<T>(path: string): Promise<T> {
   // Read the request's cookie first: during prerendering that's where Next.js stops, before any fetch.
   const requestHeaders = await apiHeaders(await getSessionToken(), await lang());
   const response = await fetch(`${apiUrl()}${path}`, { headers: requestHeaders, signal: AbortSignal.timeout(API_TIMEOUT_MS) });
-  if (response.status === 401) redirect("/login"); // signed out or the session expired
+  // Signed out elsewhere or the session expired; proxy.ts drops the stale cookie on this URL.
+  if (response.status === 401) redirect("/login?expired=1");
   if (response.status === 404) notFound(); // e.g. a deleted application: show the 404 page
   if (!response.ok) throw new Error(`GET ${path} failed with status ${response.status}`);
   return response.json();
