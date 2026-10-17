@@ -3,7 +3,7 @@
 import { refresh } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { apiHeaders, apiUrl } from "@/lib/api";
+import { API_TIMEOUT_MS, apiHeaders, apiUrl } from "@/lib/api";
 import { DEFAULT_LOCALE, getI18n, isLocale, LOCALE_COOKIE, type Locale } from "@/lib/i18n";
 import { clearSessionToken, getSessionToken, setSessionToken } from "@/lib/session";
 import type { Application } from "@/lib/types";
@@ -61,6 +61,7 @@ async function callApi(method: "POST" | "PATCH" | "DELETE", path: string, payloa
       method,
       headers: { ...apiHeaders(await getSessionToken(), locale), "Content-Type": "application/json" },
       body: payload ? JSON.stringify(payload) : undefined,
+      signal: AbortSignal.timeout(API_TIMEOUT_MS), // a timeout counts as unreachable
     });
   } catch {
     return null;

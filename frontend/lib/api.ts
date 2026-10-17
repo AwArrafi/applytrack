@@ -19,6 +19,9 @@ export function apiUrl(): string {
   return "http://localhost:8001/api";
 }
 
+/** A Django that hangs gets an error page or message after this long, not an endless spinner. */
+export const API_TIMEOUT_MS = 10_000;
+
 /** Headers every API call sends: the session token, and the language for Django's messages. */
 export function apiHeaders(token: string | undefined, locale: string): HeadersInit {
   return { "Accept-Language": locale, ...(token ? { Authorization: `Token ${token}` } : {}) };
@@ -28,7 +31,7 @@ export function apiHeaders(token: string | undefined, locale: string): HeadersIn
 export async function apiGet<T>(path: string): Promise<T> {
   // Read the request's cookie first: during prerendering that's where Next.js stops, before any fetch.
   const headers = apiHeaders(await getSessionToken(), await lang());
-  const response = await fetch(`${apiUrl()}${path}`, { headers });
+  const response = await fetch(`${apiUrl()}${path}`, { headers, signal: AbortSignal.timeout(API_TIMEOUT_MS) });
   if (response.status === 401) redirect("/login"); // signed out or the session expired
   if (response.status === 404) notFound(); // e.g. a deleted application: show the 404 page
   if (!response.ok) throw new Error(`GET ${path} failed with status ${response.status}`);

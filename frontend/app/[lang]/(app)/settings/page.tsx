@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { ChangePasswordForm } from "@/components/auth/PasswordForms";
+import { EmailForwardingCard } from "@/components/settings/EmailForwardingCard";
 import { SettingsForm } from "@/components/settings/SettingsForm";
 import { Card } from "@/components/ui/Card";
 import { getCurrentUser } from "@/lib/api";
@@ -20,6 +21,9 @@ export default async function SettingsPage() {
       </header>
       <Suspense fallback={<Card><p className="py-10 text-center text-sm text-ink-muted">…</p></Card>}>
         <CurrentSettings />
+      </Suspense>
+      <Suspense fallback={<Card><p className="py-10 text-center text-sm text-ink-muted">…</p></Card>}>
+        <EmailForwardingCard />
       </Suspense>
       <ChangePasswordForm />
     </div>

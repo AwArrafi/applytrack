@@ -119,21 +119,32 @@ def first_response_days(cohort):
     return round(sum(waits) / len(waits), 1) if waits else None
 
 
+def weekly_counts(today, weeks, submitted_dates, response_times):
+    """Counts dates per 7-day week, oldest first, the last week ending today. One query per
+    series instead of one per week. response_times are datetimes, bucketed by local date."""
+    first = today - timedelta(days=7 * weeks - 1)
+    rows = [{'week_start': (first + timedelta(days=7 * i)).isoformat(), 'submitted': 0, 'responses': 0}
+            for i in range(weeks)]
+    for key, days in (('submitted', submitted_dates),
+                      ('responses', (timezone.localdate(moment) for moment in response_times))):
+        for day in days:
+            if first <= day <= today:
+                rows[(day - first).days // 7][key] += 1
+    return rows
+
+
 def weekly_activity(user, today):
-    """Applications sent and answers received per week; the last week ends today. Answers are
-    real status changes now, not the dashboard's estimate."""
-    applications = Application.objects.owned_by(user)
-    answers = StatusChange.objects.filter(application__user=user, to_status__in=RESPONDED_STATUSES)
-    weeks = []
-    for weeks_back in range(WEEKS - 1, -1, -1):
-        start = today - timedelta(days=7 * weeks_back + 6)
-        end = start + timedelta(days=6)
-        weeks.append({
-            'week_start': start.isoformat(),
-            'submitted': applications.filter(application_date__range=(start, end)).count(),
-            'responses': answers.filter(changed_at__date__range=(start, end)).count(),
-        })
-    return weeks
+    """Applications sent and answers received per week. Answers are real status changes now,
+    not the dashboard's estimate."""
+    start = today - timedelta(days=7 * WEEKS - 1)
+    return weekly_counts(
+        today, WEEKS,
+        Application.objects.owned_by(user).filter(application_date__range=(start, today))
+        .values_list('application_date', flat=True),
+        StatusChange.objects.filter(application__user=user, to_status__in=RESPONDED_STATUSES,
+                                    changed_at__date__gte=start)
+        .values_list('changed_at', flat=True),
+    )
 
 
 def channels(cohort):

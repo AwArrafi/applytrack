@@ -198,6 +198,18 @@ MAILERS = {
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'ApplyTrack <no-reply@localhost>')
 
 
+# Rate-limit counters live in the database, so every gunicorn process shares them and a restart
+# doesn't reset them. Needs `python manage.py createcachetable` once per database.
+# shortcut: a table read per request; switch to Redis when traffic makes that noticeable.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'django_cache',
+        'OPTIONS': {'MAX_ENTRIES': 50_000},
+    }
+}
+
+
 # API: every endpoint needs a signed-in user unless it says otherwise (sign-up and sign-in do).
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -205,13 +217,26 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',  # the browsable API, when signed in to the admin
     ],
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
-    # shortcut: rates are counted in Django's default per-process memory cache; use a shared cache
-    # (e.g. Redis) once the backend runs as more than one process.
-    'DEFAULT_THROTTLE_RATES': {'auth': '10/minute'},
+    # Every signed-in user and every anonymous IP gets a ceiling; some views add a stricter scope.
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '120/minute',
+        'anon': '60/minute',
+        'auth': '10/minute',  # sign-in, sign-up, password reset and change
+        'import': '30/minute',  # pasted portal emails
+    },
     # The browsable HTML API is a development tool; production only speaks JSON.
     'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer']
     + (['rest_framework.renderers.BrowsableAPIRenderer'] if DEBUG else []),
 }
+
+# Job portal emails the user forwards to <their token>@INBOUND_EMAIL_DOMAIN are imported. The mail
+# provider posts them to /api/inbound-email/ with INBOUND_EMAIL_SECRET. Empty domain: feature off.
+INBOUND_EMAIL_DOMAIN = os.environ.get('INBOUND_EMAIL_DOMAIN', '')
+INBOUND_EMAIL_SECRET = os.environ.get('INBOUND_EMAIL_SECRET', '')
 
 # Password reset links (sent by email) open this site and stop working after an hour.
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000').rstrip('/')

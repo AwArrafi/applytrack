@@ -340,6 +340,31 @@ export const en: Dictionary = {
     tipNone: "Keep logging every application and its status changes. Suggestions show up once there is enough data.",
     followUpLink: (count) => `See ${count} applications to follow up`,
   },
+  forwarding: {
+    title: "Automatic import from email",
+    description:
+      "Forward job portal emails to your private address. New applications and status changes are recorded automatically.",
+    notActive:
+      "This turns on once ApplyTrack runs on its own domain. Until then, use the Import from email button on the Applications page.",
+    yourAddress: "Your forwarding address",
+    addressHint: "Keep this address private. Anything sent to it is read as one of your job emails.",
+    copy: "Copy",
+    copied: "Copied",
+    setupTitle: "Set it up in Gmail (once)",
+    step1: "In Gmail, open Settings → See all settings → Forwarding and POP/IMAP → Add a forwarding address, and enter the address above.",
+    step2: "Gmail sends a confirmation code to ApplyTrack. Enter this code in Gmail:",
+    waitingForCode: "Waiting for Gmail's code… reload this page after step 1.",
+    step3: "Create a filter: Settings → Filters and Blocked Addresses → Create a new filter. In From, enter:",
+    step3After: "Then choose Create filter → tick Forward it to → pick your ApplyTrack address.",
+    recentTitle: "Recently received emails",
+    recentEmpty: "No emails received yet.",
+    outcome: {
+      created: "New application",
+      updated: "Status updated",
+      unchanged: "Already recorded",
+      unrecognized: "Not recognised",
+    },
+  },
   settings: {
     title: "Settings",
     description: "Manage your profile and account preferences.",

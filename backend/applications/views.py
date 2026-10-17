@@ -8,10 +8,11 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle, UserRateThrottle
 from rest_framework.views import APIView
 
 from .models import Application, Interview
-from .analytics import build_analytics
+from .analytics import build_analytics, weekly_counts
 from .email_import import import_email as apply_portal_email
 from .pagination import StandardPagination
 from .serializers import ApplicationSerializer, InterviewSerializer
@@ -29,6 +30,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
 
     serializer_class = ApplicationSerializer
     pagination_class = StandardPagination
+    throttle_scope = 'import'  # only used by import-email, the one action with ScopedRateThrottle
 
     def get_queryset(self):
         queryset = Application.objects.owned_by(self.request.user)
@@ -52,7 +54,8 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-    @action(detail=False, methods=['post'], url_path='import-email')
+    @action(detail=False, methods=['post'], url_path='import-email',
+            throttle_classes=[UserRateThrottle, ScopedRateThrottle])
     def import_email(self, request):
         """Adds or updates an application from a job portal email's text (e.g. JobStreet's)."""
         text = request.data.get('text')
@@ -173,18 +176,13 @@ def weekly_activity(applications, today, weeks):
     The updated_at of a responded application stands in for its response date.
     shortcut: approximate, upgrade by storing a status history if the chart needs to be exact.
     """
-    result = []
-    for weeks_back in range(weeks - 1, -1, -1):
-        start = today - timedelta(days=7 * weeks_back + 6)
-        end = start + timedelta(days=6)
-        result.append({
-            'week_start': start.isoformat(),
-            'submitted': applications.filter(application_date__range=(start, end)).count(),
-            'responses': applications.filter(
-                status__in=RESPONDED_STATUSES, updated_at__date__range=(start, end)
-            ).count(),
-        })
-    return result
+    start = today - timedelta(days=7 * weeks - 1)
+    return weekly_counts(
+        today, weeks,
+        applications.filter(application_date__range=(start, today)).values_list('application_date', flat=True),
+        applications.filter(status__in=RESPONDED_STATUSES, updated_at__date__gte=start)
+        .values_list('updated_at', flat=True),
+    )
 
 
 # Periods the Analytics page offers; anything else falls back to the default.

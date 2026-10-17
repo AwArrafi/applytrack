@@ -1,3 +1,4 @@
+import secrets
 from zoneinfo import available_timezones
 
 from django.conf import settings
@@ -12,6 +13,11 @@ from django.utils.translation import gettext_lazy as _
 def validate_time_zone(value):
     if value not in available_timezones():
         raise ValidationError(_('%(value)s is not a known time zone.'), params={'value': value})
+
+
+def new_inbound_token():
+    """The private part of the user's forwarding address, e.g. "a3f9c2e17b" in a3f9c2e17b@inbound.example."""
+    return secrets.token_hex(5)
 
 
 class UserManager(BaseUserManager):
@@ -44,6 +50,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Decides "today", "this week" and the clock time of interviews for this user (IANA name).
     time_zone = models.CharField(max_length=64, default='Asia/Jakarta', validators=[validate_time_zone])
     language = models.CharField(max_length=5, choices=settings.LANGUAGES, default='id')
+    # Job portal emails forwarded to <inbound_token>@INBOUND_EMAIL_DOMAIN are imported for this user.
+    inbound_token = models.CharField(max_length=20, unique=True, default=new_inbound_token)
 
     objects = UserManager()
 
