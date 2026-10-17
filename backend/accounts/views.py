@@ -106,3 +106,25 @@ class MeView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
+class DeleteAccountView(APIView):
+    """Deletes the signed-in user and everything they own (applications, interviews, status
+    history, forwarded emails, sessions: all cascade). Needs the password; can't be undone."""
+
+    class Input(serializers.Serializer):
+        password = serializers.CharField(trim_whitespace=False)
+
+        def validate_password(self, value):
+            if not self.context['user'].check_password(value):
+                raise serializers.ValidationError(_('Your password is incorrect.'))
+            return value
+
+    # Guessing the password here is limited like sign-in.
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth'
+
+    def post(self, request):
+        self.Input(data=request.data, context={'user': request.user}).is_valid(raise_exception=True)
+        request.user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -220,3 +220,13 @@ export async function changePassword(_previous: SaveState, formData: FormData) {
   if (state.ok && response) await setSessionToken((await response.json()).token);
   return state;
 }
+
+/** Deletes the account and all its data in Django, then signs out here too. */
+export async function deleteAccount(_previous: SaveState, formData: FormData) {
+  const { t } = await currentI18n();
+  const response = await callApi("POST", "/auth/delete-account/", { password: formData.get("password") });
+  const state = await toSaveState(response, t.errors.saveFailed);
+  if (!state.ok) return state;
+  await clearSessionToken();
+  redirect("/login?deleted=1");
+}

@@ -13,7 +13,7 @@ const PAGES = [
   "/", "/applications", "/applications?page=999", "/applications?q=zzz&status=offer&sort=company",
   "/applications/999999", "/applications/abc", "/interviews", "/interviews?past_page=99",
   "/interviews?edit=999999", "/interviews?schedule=2026-10-20", "/analytics", "/analytics?period=all",
-  "/analytics?period=bogus", "/settings", "/login", "/register", "/forgot-password",
+  "/analytics?period=bogus", "/settings", "/login", "/login?deleted=1", "/register", "/forgot-password",
   "/reset-password?uid=x&token=y",
 ];
 const STATES = { "signed out": null, "stale cookie": "stale-token-from-another-device", "signed in": VALID };

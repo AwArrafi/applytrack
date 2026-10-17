@@ -369,6 +369,17 @@ export const id = {
       unrecognized: "Tidak dikenali",
     },
   },
+  deleteAccount: {
+    title: "Hapus akun",
+    description: "Hapus akun dan seluruh data Anda dari ApplyTrack secara permanen.",
+    whatIsDeleted:
+      "Semua lamaran, jadwal interview, riwayat status, catatan, dan email yang diteruskan akan ikut terhapus. Tindakan ini tidak dapat dibatalkan.",
+    password: "Kata sandi Anda",
+    confirm: "Saya mengerti bahwa akun dan seluruh data saya akan dihapus permanen.",
+    submit: "Hapus akun saya",
+    deleting: "Menghapus…",
+    done: "Akun Anda beserta seluruh datanya telah dihapus.",
+  },
   settings: {
     title: "Pengaturan",
     description: "Atur profil dan preferensi akun Anda.",

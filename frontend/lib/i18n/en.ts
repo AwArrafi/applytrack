@@ -367,6 +367,17 @@ export const en: Dictionary = {
       unrecognized: "Not recognised",
     },
   },
+  deleteAccount: {
+    title: "Delete account",
+    description: "Permanently remove your account and all your data from ApplyTrack.",
+    whatIsDeleted:
+      "All your applications, interviews, status history, notes, and forwarded emails are deleted with it. This can't be undone.",
+    password: "Your password",
+    confirm: "I understand my account and all my data will be permanently deleted.",
+    submit: "Delete my account",
+    deleting: "Deleting…",
+    done: "Your account and all its data have been deleted.",
+  },
   settings: {
     title: "Settings",
     description: "Manage your profile and account preferences.",

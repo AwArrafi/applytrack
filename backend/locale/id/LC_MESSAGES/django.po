@@ -60,3 +60,6 @@ msgid ""
 "This email is not one ApplyTrack recognises yet. For now, only JobStreet emails "
 "can be read."
 msgstr "Email ini belum dapat dikenali. Untuk sementara, ApplyTrack hanya bisa membaca email dari JobStreet."
+
+msgid "Your password is incorrect."
+msgstr "Kata sandi Anda salah."

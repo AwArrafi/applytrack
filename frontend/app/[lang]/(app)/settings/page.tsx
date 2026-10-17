@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { ChangePasswordForm } from "@/components/auth/PasswordForms";
 import { EmailForwardingCard } from "@/components/settings/EmailForwardingCard";
+import { DeleteAccountForm } from "@/components/settings/DeleteAccountForm";
 import { SettingsForm } from "@/components/settings/SettingsForm";
 import { Card } from "@/components/ui/Card";
 import { getCurrentUser } from "@/lib/api";
@@ -26,6 +27,7 @@ export default async function SettingsPage() {
         <EmailForwardingCard />
       </Suspense>
       <ChangePasswordForm />
+      <DeleteAccountForm />
     </div>
   );
 }
