@@ -59,7 +59,7 @@ async function callApi(method: "POST" | "PATCH" | "DELETE", path: string, payloa
   try {
     response = await fetch(`${apiUrl()}${path}`, {
       method,
-      headers: { ...apiHeaders(await getSessionToken(), locale), "Content-Type": "application/json" },
+      headers: { ...(await apiHeaders(await getSessionToken(), locale)), "Content-Type": "application/json" },
       body: payload ? JSON.stringify(payload) : undefined,
       signal: AbortSignal.timeout(API_TIMEOUT_MS), // a timeout counts as unreachable
     });

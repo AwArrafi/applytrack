@@ -8,11 +8,13 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
-from rest_framework.throttling import ScopedRateThrottle, UserRateThrottle
+from rest_framework.throttling import UserRateThrottle
 from rest_framework.views import APIView
 
+from config.throttling import ScopedRateThrottle
+
 from .models import Application, Interview
-from .analytics import build_analytics, weekly_counts
+from .analytics import build_analytics, weekly_activity
 from .email_import import import_email as apply_portal_email
 from .pagination import StandardPagination
 from .serializers import ApplicationSerializer, InterviewSerializer
@@ -166,23 +168,8 @@ class DashboardView(APIView):
             'status_counts': status_counts,
             'upcoming_interviews': InterviewSerializer(upcoming[:4], many=True).data,
             'recent_applications': ApplicationSerializer(applications.order_by('-updated_at')[:6], many=True).data,
-            'weekly_activity': weekly_activity(applications, today, weeks=5),
+            'weekly_activity': weekly_activity(request.user, today, weeks=5),
         })
-
-
-def weekly_activity(applications, today, weeks):
-    """Applications sent and responses received per week, oldest week first, the last ending today.
-
-    The updated_at of a responded application stands in for its response date.
-    shortcut: approximate, upgrade by storing a status history if the chart needs to be exact.
-    """
-    start = today - timedelta(days=7 * weeks - 1)
-    return weekly_counts(
-        today, weeks,
-        applications.filter(application_date__range=(start, today)).values_list('application_date', flat=True),
-        applications.filter(status__in=RESPONDED_STATUSES, updated_at__date__gte=start)
-        .values_list('updated_at', flat=True),
-    )
 
 
 # Periods the Analytics page offers; anything else falls back to the default.

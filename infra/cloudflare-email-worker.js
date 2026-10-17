@@ -18,7 +18,7 @@ export default {
       },
       body: await new Response(message.raw).arrayBuffer(),
     });
-    // Make backend failures visible in the Worker's logs instead of passing silently.
-    if (response.status >= 500) throw new Error(`ApplyTrack answered ${response.status}`);
+    // Make failures (a wrong secret, the backend down) visible in the Worker's logs.
+    if (!response.ok) throw new Error(`ApplyTrack answered ${response.status}`);
   },
 };

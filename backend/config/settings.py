@@ -220,7 +220,7 @@ REST_FRAMEWORK = {
     # Every signed-in user and every anonymous IP gets a ceiling; some views add a stricter scope.
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.UserRateThrottle',
-        'rest_framework.throttling.AnonRateThrottle',
+        'config.throttling.AnonRateThrottle',  # per visitor IP, see config/throttling.py
     ],
     'DEFAULT_THROTTLE_RATES': {
         'user': '120/minute',
@@ -232,6 +232,9 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer']
     + (['rest_framework.renderers.BrowsableAPIRenderer'] if DEBUG else []),
 }
+
+# Shared with the Next.js server, which sends it with the visitor's IP (config/throttling.py).
+FRONTEND_PROXY_SECRET = os.environ.get('FRONTEND_PROXY_SECRET', '')
 
 # Job portal emails the user forwards to <their token>@INBOUND_EMAIL_DOMAIN are imported. The mail
 # provider posts them to /api/inbound-email/ with INBOUND_EMAIL_SECRET. Empty domain: feature off.

@@ -32,7 +32,13 @@ export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
   const { locale } = await getServerI18n();
 
   return (
-    <html lang={locale} className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    // Browser extensions (e.g. QuillBot, Grammarly) add attributes to <html> before React loads;
+    // this ignores attribute differences on this one tag only, not on its children.
+    <html
+      lang={locale}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
       <body className="min-h-full font-sans">
         <I18nProvider locale={locale}>{children}</I18nProvider>
       </body>

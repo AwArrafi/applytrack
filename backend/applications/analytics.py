@@ -133,12 +133,11 @@ def weekly_counts(today, weeks, submitted_dates, response_times):
     return rows
 
 
-def weekly_activity(user, today):
-    """Applications sent and answers received per week. Answers are real status changes now,
-    not the dashboard's estimate."""
-    start = today - timedelta(days=7 * WEEKS - 1)
+def weekly_activity(user, today, weeks=WEEKS):
+    """Applications sent and answers received (real status changes) per week."""
+    start = today - timedelta(days=7 * weeks - 1)
     return weekly_counts(
-        today, WEEKS,
+        today, weeks,
         Application.objects.owned_by(user).filter(application_date__range=(start, today))
         .values_list('application_date', flat=True),
         StatusChange.objects.filter(application__user=user, to_status__in=RESPONDED_STATUSES,
