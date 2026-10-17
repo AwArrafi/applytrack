@@ -43,6 +43,11 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements.txt
       - run: pip install -r requirements.txt
+      # The Indonesian .mo files are built, not committed (the tests check translated messages).
+      - name: Compile translations
+        run: |
+          sudo apt-get install -y --no-install-recommends gettext
+          python manage.py compilemessages --ignore=.venv
       - name: No model change without a migration
         run: python manage.py makemigrations --check --dry-run
       - name: Tests
@@ -69,10 +74,11 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run lint
-      - name: Type check
-        run: npx tsc --noEmit
       - run: npm test
       - run: npm run build
+      # After the build: it generates the PageProps/LayoutProps types the code uses.
+      - name: Type check
+        run: npx tsc --noEmit
       - name: No known vulnerabilities in what ships to production
         run: npm audit --omit=dev --audit-level=high
 
