@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SupportedPortalsNotice } from "@/components/applications/SupportedPortalsNotice";
 import { Card } from "@/components/ui/Card";
 import { apiGet } from "@/lib/api";
 import { getServerI18n } from "@/lib/i18n/server";
@@ -22,6 +23,9 @@ export async function EmailForwardingCard() {
 
   return (
     <Card title={m.title} description={m.description}>
+      <div className="mb-5">
+        <SupportedPortalsNotice />
+      </div>
       {!data.address ? (
         <p className="rounded-lg bg-surface-muted p-3 text-sm text-ink-muted">{m.notActive}</p>
       ) : (

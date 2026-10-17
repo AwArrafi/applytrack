@@ -65,7 +65,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             raise ValidationError({'text': [_('Paste the full text of the email.')]})
         result, application = apply_portal_email(request.user, text)
         if result is None:
-            raise ValidationError({'text': [_('This email is not one ApplyTrack recognises yet.')]})
+            raise ValidationError({'text': [_('This email is not one ApplyTrack recognises yet. For now, only JobStreet emails can be read.')]})
         return Response({'result': result, 'application': ApplicationSerializer(application).data})
 
     @action(detail=False)

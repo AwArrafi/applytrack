@@ -268,7 +268,9 @@ export const id = {
       "Tempelkan isi email dari portal kerja, misalnya konfirmasi lamaran terkirim atau hasil seleksi. ApplyTrack akan mencatat lamaran baru atau memperbarui statusnya.",
     label: "Isi email",
     placeholder: "Salin seluruh isi email, lalu tempel di sini…",
-    supported: "Saat ini mendukung email dari JobStreet.",
+    supportedTitle: "Untuk sementara, hanya email dari JobStreet",
+    supported:
+      "Email dari LinkedIn, Glints, Kalibrr, dan portal lain belum bisa dibaca. Catat lamaran dari portal tersebut dengan tombol Tambah Lamaran.",
     submit: "Impor",
     importing: "Mengimpor…",
     created: (job: string, company: string) => `Lamaran baru dicatat: ${job} di ${company}.`,
@@ -394,6 +396,8 @@ export const id = {
     pageOf: (page: number, pages: number) => `Halaman ${page} dari ${pages}`,
   },
   auth: {
+    showPassword: "Tampilkan kata sandi",
+    hidePassword: "Sembunyikan kata sandi",
     loginTitle: "Masuk ke ApplyTrack",
     loginDescription: "Lanjutkan memantau lamaran kerja Anda.",
     registerTitle: "Buat akun ApplyTrack",

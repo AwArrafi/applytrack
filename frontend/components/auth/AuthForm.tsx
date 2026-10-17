@@ -6,6 +6,7 @@ import { login, register, type SaveState } from "@/app/actions";
 import { Field, inputClass } from "@/components/applications/fields";
 import { useI18n } from "@/components/I18nProvider";
 import { ConfirmPasswordField } from "./PasswordForms";
+import { PasswordInput } from "./PasswordInput";
 
 const INITIAL_STATE: SaveState = { ok: false, errors: {} };
 
@@ -55,15 +56,13 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           />
         </Field>
         <Field label={a.password} htmlFor="auth-password" errors={errors.password}>
-          <input
+          <PasswordInput
             id="auth-password"
             name="password"
-            type="password"
             required
             minLength={isRegister ? 8 : undefined}
             autoComplete={isRegister ? "new-password" : "current-password"}
             aria-describedby={isRegister ? "auth-password-hint" : undefined}
-            className={inputClass}
           />
           {isRegister ? (
             <p id="auth-password-hint" className="mt-1 text-xs text-ink-subtle">

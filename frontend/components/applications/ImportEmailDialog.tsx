@@ -8,6 +8,7 @@ import { importEmail, type ImportState } from "@/app/actions";
 import { useI18n } from "@/components/I18nProvider";
 import { CloseIcon } from "@/components/ui/icons";
 import { Field, inputClass } from "./fields";
+import { SupportedPortalsNotice } from "./SupportedPortalsNotice";
 
 const INITIAL_STATE: ImportState = { ok: false, errors: {} };
 
@@ -74,6 +75,7 @@ export function ImportEmailDialog() {
           {message ? (
             <p role="status" className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{message}</p>
           ) : null}
+          <SupportedPortalsNotice />
           <Field label={m.label} htmlFor="import-email-text" errors={state.errors.text}>
             <textarea
               id="import-email-text"
@@ -82,10 +84,9 @@ export function ImportEmailDialog() {
               rows={10}
               maxLength={50_000}
               placeholder={m.placeholder}
-              aria-describedby="import-email-supported"
+              aria-describedby="supported-portals-notice"
               className={`${inputClass} h-auto py-2`}
             />
-            <p id="import-email-supported" className="mt-1 text-xs text-ink-subtle">{m.supported}</p>
           </Field>
           <div role="alert" className="text-sm text-rose-700">
             {generalErrors.map((error) => (

@@ -267,7 +267,9 @@ export const en: Dictionary = {
       "Paste an email from a job portal, such as an application confirmation or a hiring decision. ApplyTrack records the new application or updates its status.",
     label: "Email text",
     placeholder: "Copy the whole email and paste it here…",
-    supported: "Currently supports emails from JobStreet.",
+    supportedTitle: "For now, JobStreet emails only",
+    supported:
+      "Emails from LinkedIn, Glints, Kalibrr, and other portals can't be read yet. Record those applications with the Add Application button.",
     submit: "Import",
     importing: "Importing…",
     created: (job, company) => `New application recorded: ${job} at ${company}.`,
@@ -392,6 +394,8 @@ export const en: Dictionary = {
     pageOf: (page, pages) => `Page ${page} of ${pages}`,
   },
   auth: {
+    showPassword: "Show password",
+    hidePassword: "Hide password",
     loginTitle: "Sign in to ApplyTrack",
     loginDescription: "Pick up where you left off with your job search.",
     registerTitle: "Create your ApplyTrack account",
