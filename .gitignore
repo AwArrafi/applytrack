@@ -55,6 +55,9 @@ cover/
 # Translations
 *.mo
 *.pot
+# ...except ours: the Render build can't install gettext, so the compiled file ships in git
+# (CI checks it matches django.po).
+!backend/locale/**/*.mo
 
 # Django stuff:
 *.log

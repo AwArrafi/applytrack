@@ -43,11 +43,18 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements.txt
       - run: pip install -r requirements.txt
-      # The Indonesian .mo files are built, not committed (the tests check translated messages).
-      - name: Compile translations
+      # django.mo is committed (Render can't compile it); fail if it's older than django.po.
+      - name: Committed translations match django.po
         run: |
           sudo apt-get install -y --no-install-recommends gettext
+          cp locale/id/LC_MESSAGES/django.mo /tmp/committed.mo
           python manage.py compilemessages --ignore=.venv
+          python -c "
+          import gettext
+          committed = gettext.GNUTranslations(open('/tmp/committed.mo', 'rb'))._catalog
+          fresh = gettext.GNUTranslations(open('locale/id/LC_MESSAGES/django.mo', 'rb'))._catalog
+          assert committed == fresh, 'backend/locale/id/LC_MESSAGES/django.mo is stale: run compilemessages and commit it'
+          "
       - name: No model change without a migration
         run: python manage.py makemigrations --check --dry-run
       - name: Tests
@@ -104,9 +111,7 @@ jobs:
       - name: Start Django with a signed-in test user
         working-directory: backend
         run: |
-          pip install -r requirements.txt
-          python manage.py migrate --noinput
-          python manage.py createcachetable
+          ./build.sh  # the same script Render runs on every deploy
           python manage.py shell -c "
           from accounts.models import User; from rest_framework.authtoken.models import Token
           user = User.objects.create_user('smoke@example.com', 'smoke-test-pass-123')
