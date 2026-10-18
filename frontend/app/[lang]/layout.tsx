@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { I18nProvider } from "@/components/I18nProvider";
 import { LOCALES } from "@/lib/i18n";
@@ -14,6 +14,10 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+// cover: the page may draw under the iPhone notch and home bar; the top bar and the bottom tab bar
+// pad themselves with env(safe-area-inset-*). Pinch-zoom stays allowed.
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 // One prerendered shell per language.
 export function generateStaticParams() {

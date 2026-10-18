@@ -4,12 +4,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Suspense, use, useEffect, type ComponentType, type SVGProps } from "react";
+import { Suspense, use, type ComponentType, type SVGProps } from "react";
 import {
   BriefcaseIcon,
   CalendarIcon,
   ChartIcon,
-  CloseIcon,
   DashboardIcon,
   LogoMark,
   PlusIcon,
@@ -26,8 +25,10 @@ export interface NavCounts {
   upcomingInterviews: number;
 }
 
-interface NavItem {
+export interface NavItem {
   label: keyof Dictionary["nav"];
+  /** Shorter label for the phone tab bar, when the full one doesn't fit. */
+  shortLabel?: keyof Dictionary["nav"];
   href: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   count?: keyof NavCounts;
@@ -35,10 +36,10 @@ interface NavItem {
   comingSoon?: boolean;
 }
 
-const NAV_ITEMS: NavItem[] = [
+export const NAV_ITEMS: NavItem[] = [
   { label: "overview", href: "/", icon: DashboardIcon },
   { label: "applications", href: "/applications", icon: BriefcaseIcon, count: "applications" },
-  { label: "interviews", href: "/interviews", icon: CalendarIcon, count: "upcomingInterviews" },
+  { label: "interviews", shortLabel: "calendar", href: "/interviews", icon: CalendarIcon, count: "upcomingInterviews" },
   { label: "analytics", href: "/analytics", icon: ChartIcon },
   { label: "settings", href: "/settings", icon: SettingsIcon },
 ];
@@ -47,65 +48,31 @@ interface SidebarProps {
   /** Streams in from the API; null when it can't be reached. */
   counts: Promise<NavCounts | null>;
   user: User;
-  mobileOpen: boolean;
-  onMobileClose: () => void;
   onAddApplication: () => void;
 }
 
-export function Sidebar({ counts, user, mobileOpen, onMobileClose, onAddApplication }: SidebarProps) {
-  const { t } = useI18n();
-  // Close the mobile menu with the Escape key.
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onMobileClose();
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [mobileOpen, onMobileClose]);
-
-  const addAndClose = () => {
-    onMobileClose();
-    onAddApplication();
-  };
-
+/** Desktop only; phones get the bottom tab bar (MobileNav) and the account menu in the top bar. */
+export function Sidebar({ counts, user, onAddApplication }: SidebarProps) {
   return (
-    <>
-      {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-ink/30" aria-hidden="true" onClick={onMobileClose} />
-          <div
-            id="mobile-navigation"
-            role="dialog"
-            aria-modal="true"
-            aria-label={t.nav.navigation}
-            className="relative flex h-full w-72 max-w-[80%] flex-col bg-surface p-4 shadow-xl"
-          >
-            <div className="flex items-center justify-between">
-              <Brand />
-              <button
-                type="button"
-                onClick={onMobileClose}
-                aria-label={t.nav.closeMenu}
-                autoFocus
-                className="rounded-lg p-1.5 text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-primary-600"
-              >
-                <CloseIcon className="size-5" />
-              </button>
-            </div>
-            <SidebarBody counts={counts} user={user} onNavigate={onMobileClose} onAddApplication={addAndClose} />
-          </div>
-        </div>
-      )}
-
-      {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r border-line bg-surface p-4 lg:flex">
-        <Brand />
-        <SidebarBody counts={counts} user={user} onAddApplication={onAddApplication} />
-      </aside>
-    </>
+    <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r border-line bg-surface p-4 lg:flex">
+      <Brand />
+      <SidebarBody counts={counts} user={user} onAddApplication={onAddApplication} />
+    </aside>
   );
+}
+
+/** "Rafi Awang" -> "RA"; falls back to the email's name part. */
+export function displayNameOf(user: User) {
+  return user.name || user.email.split("@")[0];
+}
+
+export function initialsOf(user: User) {
+  return displayNameOf(user)
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 }
 
 export function Brand() {
@@ -118,7 +85,7 @@ export function Brand() {
       <LogoMark className="size-9 text-primary-600" />
       <span className="flex flex-col leading-tight">
         <span className="font-semibold tracking-tight text-ink">ApplyTrack</span>
-        <span className="text-xs text-ink-muted">{t.nav.tagline}</span>
+        <span className="hidden text-xs text-ink-muted sm:inline">{t.nav.tagline}</span>
       </span>
     </Link>
   );
@@ -128,19 +95,13 @@ interface SidebarBodyProps {
   /** Streams in from the API; null when it can't be reached. */
   counts: Promise<NavCounts | null>;
   user: User;
-  onNavigate?: () => void;
   onAddApplication: () => void;
 }
 
-function SidebarBody({ counts, user, onNavigate, onAddApplication }: SidebarBodyProps) {
+function SidebarBody({ counts, user, onAddApplication }: SidebarBodyProps) {
   const { t } = useI18n();
-  const displayName = user.name || user.email.split("@")[0];
-  const initials = displayName
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const displayName = displayNameOf(user);
+  const initials = initialsOf(user);
 
   return (
     <div className="mt-6 flex flex-1 flex-col">
@@ -153,7 +114,7 @@ function SidebarBody({ counts, user, onNavigate, onAddApplication }: SidebarBody
         {t.common.addApplication}
       </button>
 
-      <NavLinks counts={counts} onNavigate={onNavigate} />
+      <NavLinks counts={counts} />
 
       <div className="mt-auto border-t border-line pt-4">
         <div className="flex items-center gap-2.5 rounded-lg border border-line/60 bg-surface-muted p-2">
@@ -179,7 +140,6 @@ function SidebarBody({ counts, user, onNavigate, onAddApplication }: SidebarBody
 
 interface NavLinksProps {
   counts: Promise<NavCounts | null>;
-  onNavigate?: () => void;
 }
 
 // usePathname() can't be known while prerendering pages like /applications/[id],
@@ -196,7 +156,12 @@ function CurrentNavList(props: NavLinksProps) {
   return <NavList {...props} pathname={usePathname()} />;
 }
 
-function NavList({ counts, onNavigate, pathname }: NavLinksProps & { pathname: string | null }) {
+/** Whether a nav link points at the current page (or a page under it). */
+export function isActiveHref(href: string, pathname: string | null) {
+  return href === "/" ? pathname === "/" : !!pathname?.startsWith(href);
+}
+
+function NavList({ counts, pathname }: NavLinksProps & { pathname: string | null }) {
   const { t } = useI18n();
 
   return (
@@ -204,7 +169,7 @@ function NavList({ counts, onNavigate, pathname }: NavLinksProps & { pathname: s
       <ul className="space-y-1">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
-          const isActive = item.href === "/" ? pathname === "/" : !!pathname?.startsWith(item.href);
+          const isActive = isActiveHref(item.href, pathname);
           const base = "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium";
           const badge = item.count && (
             <Suspense fallback={null}>
@@ -228,7 +193,6 @@ function NavList({ counts, onNavigate, pathname }: NavLinksProps & { pathname: s
             <li key={item.href}>
               <Link
                 href={item.href}
-                onClick={onNavigate}
                 aria-current={isActive ? "page" : undefined}
                 className={`${base} transition-colors focus-visible:outline-2 focus-visible:outline-primary-600 ${
                   isActive ? "bg-primary-50 text-primary-700" : "text-ink-muted hover:bg-surface-muted hover:text-ink"
@@ -283,7 +247,7 @@ export function LanguageSwitcher() {
   );
 }
 
-function LogoutButton() {
+export function LogoutButton() {
   const { t } = useI18n();
   const { pending } = useFormStatus();
   return (

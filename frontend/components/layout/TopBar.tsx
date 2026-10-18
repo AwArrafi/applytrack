@@ -1,11 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useRef } from "react";
+import { logout } from "@/app/actions";
 import { useI18n } from "@/components/I18nProvider";
-import { MenuIcon, PlusIcon, SearchIcon } from "@/components/ui/icons";
+import { PlusIcon, SearchIcon, SettingsIcon } from "@/components/ui/icons";
 import type { Dictionary } from "@/lib/i18n";
-import { Brand } from "./Sidebar";
+import type { User } from "@/lib/types";
+import { Brand, LanguageSwitcher, LogoutButton, displayNameOf, initialsOf } from "./Sidebar";
 
 /** Breadcrumb trail for each route: [section, page]. */
 type Crumb = keyof Dictionary["crumbs"];
@@ -18,12 +21,12 @@ const BREADCRUMBS: Record<string, [Crumb, Crumb]> = {
 };
 
 interface TopBarProps {
-  onOpenMenu: () => void;
+  user: User;
   onAddApplication: () => void;
 }
 
-/** Sticky bar above the page: breadcrumbs, search, and the main action. */
-export function TopBar({ onOpenMenu, onAddApplication }: TopBarProps) {
+/** Sticky bar above the page: breadcrumbs, search, and the main action; on phones, the logo and account menu. */
+export function TopBar({ user, onAddApplication }: TopBarProps) {
   const { t } = useI18n();
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -40,18 +43,9 @@ export function TopBar({ onOpenMenu, onAddApplication }: TopBarProps) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-line bg-surface/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
       <div className="flex h-14 items-center gap-3 px-4 sm:px-6 lg:px-8">
-        <button
-          type="button"
-          onClick={onOpenMenu}
-          aria-label={t.nav.openMenu}
-          aria-controls="mobile-navigation"
-          className="-ml-1.5 rounded-lg p-1.5 text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-primary-600 lg:hidden"
-        >
-          <MenuIcon className="size-6" />
-        </button>
-        <div className="sm:hidden">
+        <div className="lg:hidden">
           <Brand />
         </div>
 
@@ -78,17 +72,64 @@ export function TopBar({ onOpenMenu, onAddApplication }: TopBarProps) {
           </kbd>
         </form>
 
+        {/* Phones and tablets use the floating button in AppShell instead. */}
         <button
           type="button"
           onClick={onAddApplication}
-          className="ml-auto flex shrink-0 items-center gap-2 rounded-lg bg-primary-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 active:scale-[0.98]"
+          className="ml-auto hidden shrink-0 items-center gap-2 rounded-lg bg-primary-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 active:scale-[0.98] lg:flex"
         >
           <PlusIcon className="size-4" />
-          <span className="hidden sm:inline">{t.common.addApplication}</span>
-          <span className="sr-only sm:hidden">{t.common.addApplication}</span>
+          {t.common.addApplication}
         </button>
+        <AccountMenu user={user} />
       </div>
     </header>
+  );
+}
+
+/**
+ * Phones and tablets: the avatar opens Settings, the language switch, and sign-out (the desktop
+ * sidebar shows these). A native popover: Escape and tapping outside close it.
+ */
+function AccountMenu({ user }: { user: User }) {
+  const { t } = useI18n();
+  const menuRef = useRef<HTMLDivElement>(null);
+  return (
+    <div className="ml-auto lg:hidden">
+      <button
+        type="button"
+        popoverTarget="account-menu"
+        aria-label={t.nav.account}
+        className="flex size-9 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700 ring-1 ring-primary-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+      >
+        {initialsOf(user)}
+      </button>
+      <div
+        ref={menuRef}
+        id="account-menu"
+        popover="auto"
+        className="fixed inset-auto right-4 top-[calc(3.5rem+env(safe-area-inset-top))] m-0 w-64 rounded-xl border border-line bg-surface p-2 shadow-xl"
+      >
+        <div className="border-b border-line-soft px-2 pb-2 pt-1">
+          <p className="truncate text-sm font-semibold text-ink">{displayNameOf(user)}</p>
+          <p className="truncate text-xs text-ink-muted">{user.email}</p>
+        </div>
+        <Link
+          href="/settings"
+          onClick={() => menuRef.current?.hidePopover()}
+          className="mt-1 flex items-center gap-2.5 rounded-lg px-2 py-2.5 text-sm font-medium text-ink hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-600"
+        >
+          <SettingsIcon className="size-5 text-ink-muted" />
+          {t.nav.settings}
+        </Link>
+        <div className="border-t border-line-soft px-1 pb-1">
+          <LanguageSwitcher />
+        </div>
+        <form action={logout} className="border-t border-line-soft px-1 pt-2">
+          <LogoutButton />
+        </form>
+      </div>
+    </div>
   );
 }
 
