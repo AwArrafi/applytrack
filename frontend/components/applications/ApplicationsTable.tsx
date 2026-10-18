@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ApplicationCards } from "@/components/applications/ApplicationCards";
 import { EditApplicationLink } from "@/components/applications/EditApplicationLink";
 import { CompanyAvatar } from "@/components/ui/CompanyAvatar";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -11,11 +12,13 @@ interface ApplicationsTableProps {
   today: string;
 }
 
-/** Every application with its details. Less important columns hide on small screens. */
+/** Every application with its details: cards on phones, a table from sm up (less important columns hide on smaller screens). */
 export async function ApplicationsTable({ applications, today }: ApplicationsTableProps) {
   const { t, f } = await getServerI18n();
   return (
-    <div className="overflow-x-auto">
+    <>
+      <ApplicationCards applications={applications} today={today} />
+    <div className="hidden overflow-x-auto sm:block">
       <table className="w-full text-left text-xs">
         <caption className="sr-only">{t.applications.caption}</caption>
         <thead className="border-b border-line-soft bg-surface-muted text-[11px] uppercase tracking-wider text-ink-muted">
@@ -72,5 +75,6 @@ export async function ApplicationsTable({ applications, today }: ApplicationsTab
         </tbody>
       </table>
     </div>
+    </>
   );
 }

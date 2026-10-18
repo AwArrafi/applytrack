@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ImportEmailDialog } from "@/components/applications/ImportEmailDialog";
 import { SupportedPortalsNotice } from "@/components/applications/SupportedPortalsNotice";
 import { Card } from "@/components/ui/Card";
 import { apiGet } from "@/lib/api";
@@ -23,8 +24,12 @@ export async function EmailForwardingCard() {
 
   return (
     <Card title={m.title} description={m.description}>
-      <div className="mb-5">
+      <div className="mb-5 space-y-3">
         <SupportedPortalsNotice />
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-ink-muted">
+          <span>{m.pasteInstead}</span>
+          <ImportEmailDialog />
+        </div>
       </div>
       {!data.address ? (
         <p className="rounded-lg bg-surface-muted p-3 text-sm text-ink-muted">{m.notActive}</p>

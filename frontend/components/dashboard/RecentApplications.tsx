@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
+import { ApplicationCards } from "@/components/applications/ApplicationCards";
 import { EditApplicationLink } from "@/components/applications/EditApplicationLink";
 import { CompanyAvatar } from "@/components/ui/CompanyAvatar";
 import { ChevronRightIcon } from "@/components/ui/icons";
@@ -36,7 +37,9 @@ export async function RecentApplications({ applications, today }: RecentApplicat
           {t.recent.empty}
         </p>
       ) : (
-        <div className="overflow-x-auto">
+        <>
+        <ApplicationCards applications={applications} today={today} />
+        <div className="hidden overflow-x-auto sm:block">
           <table className="w-full text-left text-xs">
             <caption className="sr-only">{t.recent.caption}</caption>
             <thead className="border-b border-line-soft bg-surface-muted text-[11px] uppercase tracking-wider text-ink-muted">
@@ -80,6 +83,7 @@ export async function RecentApplications({ applications, today }: RecentApplicat
             </tbody>
           </table>
         </div>
+        </>
       )}
     </Card>
   );

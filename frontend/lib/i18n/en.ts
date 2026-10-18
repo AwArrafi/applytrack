@@ -176,6 +176,11 @@ export const en: Dictionary = {
     added: (date) => `Added ${date}`,
   },
   applicationForm: {
+    workArrangementOptions: {
+      onsite: ["On-site", "At the office"],
+      hybrid: ["Hybrid", "Mixed"],
+      remote: ["Remote", "From home"],
+    },
     addTitle: "Add Application",
     addDescription: "Record a new role you applied for",
     details: "Details",
@@ -207,6 +212,8 @@ export const en: Dictionary = {
     schedule: "Schedule Interview",
     today: "Today",
     month: "Month",
+    thisMonth: "Interviews this month",
+    noneThisMonth: "No interviews this month.",
     previousMonth: "Previous month",
     nextMonth: "Next month",
     types: "Interview stages",
@@ -347,7 +354,8 @@ export const en: Dictionary = {
     description:
       "Forward job portal emails to your private address. New applications and status changes are recorded automatically.",
     notActive:
-      "This turns on once ApplyTrack runs on its own domain. Until then, use the Import from email button on the Applications page.",
+      "This turns on once ApplyTrack runs on its own domain. Until then, paste an email by hand with the button above.",
+    pasteInstead: "Or paste a single email by hand:",
     yourAddress: "Your forwarding address",
     addressHint: "Keep this address private. Anything sent to it is read as one of your job emails.",
     copy: "Copy",

@@ -107,7 +107,7 @@ async function InterviewCalendar({ searchParams }: { searchParams: SearchParams 
             {t.interviews.today}
           </Link>
         </div>
-        <ul className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-ink-muted" aria-label={t.interviews.types}>
+        <ul className="hidden flex-wrap gap-x-3 gap-y-1 text-xs text-ink-muted sm:flex" aria-label={t.interviews.types}>
           {INTERVIEW_TYPES.map((type) => (
             <li key={type} className="flex items-center gap-1.5">
               <span className={`size-2 rounded-full ${INTERVIEW_TYPE_STYLES[type].dot}`} aria-hidden="true" />

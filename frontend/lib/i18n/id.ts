@@ -176,6 +176,11 @@ export const id = {
     added: (date: string) => `Ditambahkan ${date}`,
   },
   applicationForm: {
+    workArrangementOptions: {
+      onsite: ["WFO", "Di kantor"],
+      hybrid: ["Hybrid", "Kombinasi"],
+      remote: ["WFH", "Dari rumah"],
+    },
     addTitle: "Tambah Lamaran",
     addDescription: "Catat posisi baru yang Anda lamar",
     details: "Detail",
@@ -208,6 +213,8 @@ export const id = {
     schedule: "Jadwalkan Interview",
     today: "Hari ini",
     month: "Bulan",
+    thisMonth: "Interview bulan ini",
+    noneThisMonth: "Belum ada interview di bulan ini.",
     previousMonth: "Bulan sebelumnya",
     nextMonth: "Bulan berikutnya",
     types: "Jenis tahapan",
@@ -349,7 +356,8 @@ export const id = {
     description:
       "Teruskan email dari portal kerja ke alamat khusus Anda. Lamaran baru dan perubahan statusnya akan tercatat otomatis.",
     notActive:
-      "Fitur ini aktif setelah ApplyTrack online dengan domain sendiri. Sementara itu, gunakan tombol Impor dari email di halaman Lamaran.",
+      "Fitur ini aktif setelah ApplyTrack online dengan domain sendiri. Sementara itu, tempel isi email secara manual dengan tombol di atas.",
+    pasteInstead: "Atau tempel isi satu email secara manual:",
     yourAddress: "Alamat penerusan Anda",
     addressHint: "Rahasiakan alamat ini. Email yang dikirim ke sini akan dibaca sebagai email lamaran Anda.",
     copy: "Salin",

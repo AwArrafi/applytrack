@@ -40,13 +40,13 @@ async function AnalyticsContent({ searchParams }: { searchParams: PageProps<"/[l
 
   return (
     <>
-      <nav aria-label={t.analytics.periodLabel} className="flex flex-wrap gap-2">
+      <nav aria-label={t.analytics.periodLabel} className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
         {PERIODS.map((option) => (
           <Link
             key={option}
             href={`/analytics?period=${option}`}
             aria-current={option === period ? "page" : undefined}
-            className="rounded-lg border border-line bg-surface px-3 py-1.5 text-sm font-medium text-ink-muted hover:text-ink aria-[current=page]:border-primary-600 aria-[current=page]:bg-primary-50 aria-[current=page]:text-primary-700 focus-visible:outline-2 focus-visible:outline-primary-600"
+            className="rounded-lg border border-line bg-surface px-2 py-1.5 text-center text-xs font-medium text-ink-muted sm:px-3 sm:text-sm hover:text-ink aria-[current=page]:border-primary-600 aria-[current=page]:bg-primary-50 aria-[current=page]:text-primary-700 focus-visible:outline-2 focus-visible:outline-primary-600"
           >
             {t.analytics.period[option]}
           </Link>

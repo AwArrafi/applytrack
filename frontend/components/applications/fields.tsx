@@ -44,7 +44,7 @@ export function WorkArrangementField({ defaultValue }: { defaultValue: WorkArran
         {WORK_ARRANGEMENTS.map((value) => (
           <label
             key={value}
-            className="cursor-pointer rounded-md py-1 text-xs font-medium text-ink-muted hover:text-ink has-checked:bg-surface has-checked:text-primary-700 has-checked:shadow-sm has-focus-visible:outline-2 has-focus-visible:outline-primary-600"
+            className="group flex cursor-pointer flex-col items-center justify-center rounded-md px-1 py-1.5 text-ink-muted hover:text-ink has-checked:bg-surface has-checked:text-primary-700 has-checked:shadow-sm has-focus-visible:outline-2 has-focus-visible:outline-primary-600"
           >
             <input
               type="radio"
@@ -53,7 +53,10 @@ export function WorkArrangementField({ defaultValue }: { defaultValue: WorkArran
               defaultChecked={value === defaultValue}
               className="sr-only"
             />
-            {t.workArrangement[value]}
+            <span className="text-sm font-semibold leading-tight">{t.applicationForm.workArrangementOptions[value][0]}</span>
+            <span className="text-[11px] leading-tight text-ink-subtle group-has-checked:text-primary-600">
+              {t.applicationForm.workArrangementOptions[value][1]}
+            </span>
           </label>
         ))}
       </div>

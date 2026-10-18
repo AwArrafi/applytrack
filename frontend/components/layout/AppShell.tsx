@@ -4,7 +4,7 @@
 // (Add Application dialog open). The page content passed in as `children` can still be
 // Server Components.
 
-import { useCallback, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import { AddApplicationDialog } from "@/components/applications/AddApplicationDialog";
 import { useI18n } from "@/components/I18nProvider";
 import { PlusIcon } from "@/components/ui/icons";
@@ -12,6 +12,25 @@ import { MobileNav } from "./MobileNav";
 import { Sidebar, type NavCounts } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import type { User } from "@/lib/types";
+
+// Lets a page open the one Add Application dialog the shell owns (no second copy of the form).
+const OpenAddApplication = createContext<() => void>(() => {});
+
+/** "Add application" for a page header; phones use the floating button instead. */
+export function AddApplicationButton() {
+  const { t } = useI18n();
+  const open = useContext(OpenAddApplication);
+  return (
+    <button
+      type="button"
+      onClick={open}
+      className="hidden h-9 items-center gap-2 rounded-lg bg-primary-600 px-3.5 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 active:scale-[0.98] sm:flex"
+    >
+      <PlusIcon className="size-4" />
+      {t.common.addApplication}
+    </button>
+  );
+}
 
 interface AppShellProps {
   navCounts: Promise<NavCounts | null>;
@@ -35,7 +54,9 @@ export function AppShell({ navCounts, user, children }: AppShellProps) {
       <div className="lg:pl-60">
         <TopBar user={user} onAddApplication={() => setAddOpen(true)} />
         {/* Bottom padding on phones: room for the tab bar and the floating button. */}
-        <main className="mx-auto max-w-7xl px-4 pb-36 pt-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
+        <main className="mx-auto max-w-7xl px-4 pb-36 pt-6 sm:px-6 lg:px-8 lg:py-8">
+          <OpenAddApplication value={() => setAddOpen(true)}>{children}</OpenAddApplication>
+        </main>
       </div>
       <button
         type="button"

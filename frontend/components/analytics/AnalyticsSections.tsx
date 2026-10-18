@@ -24,7 +24,7 @@ export async function KpiCards({ kpis }: { kpis: Analytics["kpis"] }) {
   const a = t.analytics;
   const { applications, interviews, offers, responses } = kpis;
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
       <StatCard
         label={a.totalApplications}
         value={applications.value}
@@ -75,7 +75,25 @@ export async function Funnel({ funnel }: { funnel: Analytics["funnel"] }) {
         <p className="py-6 text-center text-sm text-ink-muted">{a.funnelEmpty}</p>
       ) : (
         <>
-          <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <ol className="space-y-3 sm:hidden">
+            {funnel.map(({ stage, count }, index) => (
+              <li key={stage}>
+                <div className="flex items-center gap-2.5 text-sm">
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary-50 font-mono text-[11px] font-semibold text-primary-700">
+                    {index + 1}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate font-medium text-ink">{a.stages[stage].name}</span>
+                  <span className="shrink-0 font-mono text-xs text-ink-muted">
+                    <span className="font-semibold text-ink">{count}</span> ({percentOf(count, submitted)}%)
+                  </span>
+                </div>
+                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-muted" aria-hidden="true">
+                  <div className={`h-full rounded-full ${STAGE_COLORS[index]}`} style={{ width: `${percentOf(count, submitted)}%` }} />
+                </div>
+              </li>
+            ))}
+          </ol>
+          <ol className="hidden gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-5">
             {funnel.map(({ stage, count }, index) => (
               <li key={stage} className="flex flex-col rounded-lg border border-line/70 p-4">
                 <div className="flex items-center justify-between font-mono text-[11px] text-ink-muted">
