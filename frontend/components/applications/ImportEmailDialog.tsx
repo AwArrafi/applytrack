@@ -9,6 +9,7 @@ import { useI18n } from "@/components/I18nProvider";
 import { CloseIcon } from "@/components/ui/icons";
 import { Field, inputClass } from "./fields";
 import { SupportedPortalsNotice } from "./SupportedPortalsNotice";
+import { DIALOG_CLASS, DIALOG_HEADER_CLASS } from "@/components/ui/dialog";
 
 const INITIAL_STATE: ImportState = { ok: false, errors: {} };
 
@@ -45,9 +46,9 @@ export function ImportEmailDialog() {
         // A click on the dialog element itself (not its content) is a click on the backdrop.
         onClick={(event) => event.target === dialogRef.current && dialogRef.current?.close()}
         aria-labelledby="import-email-title"
-        className="m-auto max-h-[92dvh] w-[calc(100%-2rem)] max-w-xl overflow-y-auto rounded-2xl border border-line bg-surface p-0 text-ink shadow-2xl"
+        className={DIALOG_CLASS}
       >
-        <div className="flex items-start justify-between gap-3 border-b border-line px-6 py-4">
+        <div className={`flex items-start justify-between gap-3 px-6 py-4 ${DIALOG_HEADER_CLASS}`}>
           <div>
             <h2 id="import-email-title" className="font-semibold">{m.title}</h2>
             <p className="mt-0.5 text-xs text-ink-muted">{m.description}</p>
