@@ -52,14 +52,6 @@ export function CalendarIcon(props: IconProps) {
   );
 }
 
-export function MenuIcon(props: IconProps) {
-  return (
-    <Icon {...props}>
-      <path d="M4 6h16M4 12h16M4 18h16" />
-    </Icon>
-  );
-}
-
 export function CloseIcon(props: IconProps) {
   return (
     <Icon {...props}>
@@ -196,5 +188,34 @@ export function LogoMark(props: IconProps) {
         strokeLinejoin="round"
       />
     </svg>
+  );
+}
+
+export function LinkIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5" />
+      <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5" />
+    </Icon>
+  );
+}
+
+export function CheckIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </Icon>
+  );
+}
+
+/** A document with a pen: "write down a new application". */
+export function NoteIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4" />
+      <path d="M14 3l5 5h-5z" />
+      <path d="M9 9h2M9 13h5M9 17h1" />
+      <path d="M18.5 13.5l2 2-5 5H13.5v-2z" />
+    </Icon>
   );
 }

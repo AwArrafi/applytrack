@@ -6,7 +6,7 @@ import { useI18n } from "@/components/I18nProvider";
 import { Card } from "@/components/ui/Card";
 import { APPLICATION_STATUSES } from "@/lib/constants";
 import type { Application } from "@/lib/types";
-import { Field, inputClass, SourceField, WorkArrangementField } from "./fields";
+import { Field, inputClass, SalaryFields, SourceField, WorkArrangementField } from "./fields";
 
 const INITIAL_STATE: SaveState = { ok: false, errors: {} };
 
@@ -35,10 +35,10 @@ export function EditApplicationForm({ application: app }: { application: Applica
       <Card title={t.applicationForm.details} padded={false}>
         <div className="space-y-4 p-5 sm:p-6">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={t.applicationForm.company} htmlFor="edit-company" errors={errors.company_name}>
+            <Field label={t.applicationForm.company} htmlFor="edit-company" required errors={errors.company_name}>
               <input id="edit-company" name="company_name" required defaultValue={app.company_name} className={inputClass} />
             </Field>
-            <Field label={t.applicationForm.role} htmlFor="edit-role" errors={errors.job_title}>
+            <Field label={t.applicationForm.role} htmlFor="edit-role" required errors={errors.job_title}>
               <input id="edit-role" name="job_title" required defaultValue={app.job_title} className={inputClass} />
             </Field>
           </div>
@@ -63,24 +63,11 @@ export function EditApplicationForm({ application: app }: { application: Applica
             <WorkArrangementField defaultValue={app.work_arrangement} />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-[1fr_1fr_6rem]">
-            <Field label={t.applicationForm.salaryFrom} htmlFor="edit-salary-min" errors={errors.salary_min}>
-              <input id="edit-salary-min" name="salary_min" type="number" min={0} step={1} defaultValue={app.salary_min ?? ""} className={inputClass} />
-            </Field>
-            <Field label={t.applicationForm.salaryTo} htmlFor="edit-salary-max" errors={errors.salary_max}>
-              <input id="edit-salary-max" name="salary_max" type="number" min={0} step={1} defaultValue={app.salary_max ?? ""} className={inputClass} />
-            </Field>
-            <Field label={t.applicationForm.currency} htmlFor="edit-currency" errors={errors.salary_currency}>
-              <input
-                id="edit-currency"
-                name="salary_currency"
-                required
-                maxLength={3}
-                defaultValue={app.salary_currency}
-                className={`${inputClass} uppercase`}
-              />
-            </Field>
-          </div>
+          <SalaryFields
+            idPrefix="edit"
+            defaults={{ min: app.salary_min, max: app.salary_max, currency: app.salary_currency }}
+            errors={errors}
+          />
 
           <div className="grid gap-4 sm:grid-cols-2">
             <SourceField id="edit-source" defaultValue={app.source} errors={errors.source} />

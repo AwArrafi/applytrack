@@ -18,6 +18,14 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # Node's type definitions follow the Node version we run (24), not the newest Node.
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
+      # TypeScript 7 (the rewritten compiler) breaks the linter for now; revisit when
+      # typescript-eslint and Next.js support it.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
     directory: /

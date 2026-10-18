@@ -2,7 +2,7 @@ import Form from "next/form";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ApplicationsTable } from "@/components/applications/ApplicationsTable";
-import { ImportEmailDialog } from "@/components/applications/ImportEmailDialog";
+import { AddApplicationButton } from "@/components/layout/AppShell";
 import { Card } from "@/components/ui/Card";
 import { SearchIcon } from "@/components/ui/icons";
 import { Pager } from "@/components/ui/Pager";
@@ -56,7 +56,7 @@ export default async function ApplicationsPage({ searchParams }: PageProps<"/[la
           <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-[1.75rem]">{t.applications.title}</h1>
           <p className="mt-1 text-sm text-ink-muted">{t.applications.description}</p>
         </div>
-        <ImportEmailDialog />
+        <AddApplicationButton />
       </header>
 
       {/* Reading the URL happens at request time, so it streams in behind this boundary. */}
@@ -82,8 +82,9 @@ async function FilteredApplications({ searchParams }: { searchParams: PageProps<
   return (
     <Card padded={false}>
       {/* A plain GET form: the filters live in the URL, so results can be bookmarked and shared. */}
-      <Form action="/applications" role="search" className="flex flex-wrap items-end gap-3 border-b border-line-soft p-4 sm:p-5">
-        <div className="relative min-w-48 flex-1">
+      {/* Phones: search on its own row, the two dropdowns side by side, then the buttons. */}
+      <Form action="/applications" role="search" className="grid grid-cols-2 items-end gap-3 border-b border-line-soft p-4 sm:flex sm:flex-wrap sm:p-5">
+        <div className="relative col-span-2 sm:min-w-48 sm:flex-1">
           <label htmlFor="applications-search" className="sr-only">{t.common.searchLabel}</label>
           <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-muted" />
           <input
@@ -97,7 +98,7 @@ async function FilteredApplications({ searchParams }: { searchParams: PageProps<
         </div>
         <div>
           <label htmlFor="applications-status" className="mb-1 block text-xs font-medium text-ink-muted">{t.common.status}</label>
-          <select id="applications-status" name="status" defaultValue={filters.status} className={controlClass}>
+          <select id="applications-status" name="status" defaultValue={filters.status} className={`${controlClass} w-full sm:w-auto`}>
             <option value="all">{t.applications.allStatuses}</option>
             {APPLICATION_STATUSES.map((value) => (
               <option key={value} value={value}>{t.status[value]}</option>
@@ -106,26 +107,29 @@ async function FilteredApplications({ searchParams }: { searchParams: PageProps<
         </div>
         <div>
           <label htmlFor="applications-sort" className="mb-1 block text-xs font-medium text-ink-muted">{t.applications.sortBy}</label>
-          <select id="applications-sort" name="sort" defaultValue={filters.sort} className={controlClass}>
+          <select id="applications-sort" name="sort" defaultValue={filters.sort} className={`${controlClass} w-full sm:w-auto`}>
             {SORT_KEYS.map((value) => (
               <option key={value} value={value}>{t.applications.sort[value]}</option>
             ))}
           </select>
         </div>
-        <button
-          type="submit"
-          className="h-9 rounded-lg bg-primary-600 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
-        >
-          {t.applications.apply}
-        </button>
-        {isFiltered && (
-          <Link
-            href="/applications"
-            className="flex h-9 items-center rounded-lg px-2 text-sm font-medium text-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-primary-600"
+        {/* sm:contents: from sm up the buttons sit in the form's own row of filters. */}
+        <div className="col-span-2 flex gap-2 sm:contents">
+          <button
+            type="submit"
+            className="h-9 flex-1 rounded-lg bg-primary-600 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 sm:flex-none"
           >
-            {t.applications.clear}
-          </Link>
-        )}
+            {t.applications.apply}
+          </button>
+          {isFiltered && (
+            <Link
+              href="/applications"
+              className="flex h-9 items-center rounded-lg px-3 text-sm font-medium text-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-primary-600"
+            >
+              {t.applications.clear}
+            </Link>
+          )}
+        </div>
       </Form>
 
       <p className="px-5 py-3 text-xs text-ink-muted" aria-live="polite">

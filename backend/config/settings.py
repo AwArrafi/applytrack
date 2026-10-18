@@ -62,6 +62,9 @@ def env_bool(name, default):
 
 
 ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1')
+# Render sets this to the service's own address (xxx.onrender.com); allow it without configuring it.
+if os.environ.get('RENDER_EXTERNAL_HOSTNAME'):
+    ALLOWED_HOSTS.append(os.environ['RENDER_EXTERNAL_HOSTNAME'])
 # Full origins (with https://) allowed to submit forms, e.g. the admin's sign-in, when served on a domain.
 CSRF_TRUSTED_ORIGINS = env_list('DJANGO_CSRF_TRUSTED_ORIGINS')
 
@@ -254,6 +257,8 @@ AUTH_TOKEN_TTL_DAYS = int(os.environ.get('AUTH_TOKEN_TTL_DAYS', '30'))
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = env_bool('DJANGO_SECURE_SSL_REDIRECT', True)
+    # The host's health checker calls over plain HTTP from inside its network; a redirect would fail it.
+    SECURE_REDIRECT_EXEMPT = [r'^api/health/$']
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     # Browsers remember to use HTTPS only. Start lower (e.g. 3600) on a new domain, raise once it works.

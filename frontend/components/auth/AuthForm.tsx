@@ -91,6 +91,13 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         >
           {pending ? (isRegister ? a.registering : a.loggingIn) : isRegister ? a.register : a.login}
         </button>
+        {isRegister && (
+          <p className="text-center text-xs text-ink-subtle">
+            {t.privacy.agreeBefore}
+            <Link href="/privacy" className="font-medium text-primary-700 hover:underline">{t.privacy.link}</Link>
+            {t.privacy.agreeAfter}
+          </p>
+        )}
       </form>
 
       <p className="mt-6 text-center text-sm text-ink-muted">

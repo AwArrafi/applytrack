@@ -221,3 +221,41 @@ class DeleteAccountTests(APITestCase):
     def test_needs_a_session(self):
         self.client.credentials()
         self.assertEqual(self.delete('a-strong-pass-123').status_code, 401)
+
+
+class FailedLoginLimitTests(APITestCase):
+    """5 wrong passwords lock that account's sign-in for 15 minutes, whatever IP they come from."""
+
+    def setUp(self):
+        cache.clear()
+        User.objects.create_user('target@example.com', 'the-right-pass-123')
+
+    def login(self, password, email='target@example.com', ip='1.1.1.1'):
+        return self.client.post('/api/auth/login/', {'email': email, 'password': password}, format='json', REMOTE_ADDR=ip)
+
+    def test_locks_after_five_failures_even_with_the_right_password_from_another_ip(self):
+        for n in range(5):
+            self.assertEqual(self.login('wrong', ip=f'10.0.0.{n}').status_code, 400)
+        self.assertEqual(self.login('the-right-pass-123', ip='10.9.9.9').status_code, 429)
+        self.assertEqual(self.login('the-right-pass-123', email='TARGET@example.com ').status_code, 429)  # same account
+
+    def test_lock_ends_after_the_window(self):
+        for _ in range(5):
+            self.login('wrong')
+        cache.clear()  # what 15 minutes later looks like: the counter has expired
+        self.assertEqual(self.login('the-right-pass-123').status_code, 200)
+
+    def test_a_successful_sign_in_resets_the_count_and_other_accounts_are_unaffected(self):
+        # Each from its own IP, so only the per-account limit is in play.
+        for n in range(4):
+            self.login('wrong', ip=f'10.0.1.{n}')
+        self.assertEqual(self.login('the-right-pass-123', ip='10.0.2.1').status_code, 200)
+        for n in range(4):
+            self.assertEqual(self.login('wrong', ip=f'10.0.3.{n}').status_code, 400)  # counting from zero again
+        self.assertEqual(self.login('wrong', email='someone-else@example.com', ip='10.0.4.1').status_code, 400)
+
+    def test_odd_input_is_not_counted_or_crashing(self):
+        self.assertEqual(self.login('x', email='a' * 5000).status_code, 400)
+        for _ in range(6):
+            self.client.post('/api/auth/login/', {'email': 'target@example.com'}, format='json')  # no password
+        self.assertEqual(self.login('the-right-pass-123').status_code, 200)

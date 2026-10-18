@@ -11,6 +11,7 @@ import { useI18n } from "@/components/I18nProvider";
 import { CalendarIcon, CloseIcon } from "@/components/ui/icons";
 import { INTERVIEW_OUTCOMES, INTERVIEW_TYPES } from "@/lib/constants";
 import type { ApplicationChoice, InterviewWithApplication } from "@/lib/types";
+import { DIALOG_CLASS, DIALOG_FOOTER_CLASS, DIALOG_FORM_CLASS, DIALOG_HEADER_CLASS } from "@/components/ui/dialog";
 
 const INITIAL_STATE: SaveState = { ok: false, errors: {} };
 
@@ -59,17 +60,18 @@ export function InterviewDialog({ interview, applications, defaultDate, closeHre
       // A click on the dialog element itself (not its content) is a click on the backdrop.
       onClick={(event) => event.target === dialogRef.current && close()}
       aria-labelledby="interview-dialog-title"
-      className="m-auto max-h-[92dvh] w-[calc(100%-2rem)] max-w-xl overflow-y-auto rounded-2xl border border-line bg-surface p-0 text-ink shadow-2xl"
+      className={DIALOG_CLASS}
     >
       {/* Submitted by hand: <form action> would also clear what the user typed when saving fails. */}
       <form
+        className={DIALOG_FORM_CLASS}
         onSubmit={(event) => {
           event.preventDefault();
           const formData = new FormData(event.currentTarget);
           startTransition(() => formAction(formData));
         }}
       >
-        <div className="flex items-center justify-between border-b border-line px-6 py-4">
+        <div className={`flex items-center justify-between px-6 py-4 ${DIALOG_HEADER_CLASS}`}>
           <div className="flex items-center gap-3">
             <span className="flex size-8 items-center justify-center rounded-lg bg-primary-100 text-primary-700">
               <CalendarIcon className="size-4" />
@@ -175,7 +177,7 @@ export function InterviewDialog({ interview, applications, defaultDate, closeHre
           </fieldset>
         </div>
 
-        <div className="flex flex-col-reverse gap-3 border-t border-line bg-surface-muted/60 px-6 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+        <div className={`flex flex-col-reverse gap-3 px-6 py-3.5 sm:flex-row sm:items-center sm:justify-between ${DIALOG_FOOTER_CLASS}`}>
           <div className="flex items-center gap-3">
             {interview && (
               <button
@@ -193,7 +195,7 @@ export function InterviewDialog({ interview, applications, defaultDate, closeHre
               ))}
             </div>
           </div>
-          <div className="flex gap-2.5">
+          <div className="flex gap-2.5 max-sm:*:flex-1">
             <button
               type="button"
               onClick={close}

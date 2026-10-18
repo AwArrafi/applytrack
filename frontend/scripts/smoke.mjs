@@ -7,14 +7,14 @@ const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3000";
 const VALID = process.argv[2];
 if (!VALID) throw new Error("Pass a valid session token: node scripts/smoke.mjs <token>");
 
-const PUBLIC = ["/login", "/register", "/forgot-password", "/reset-password"];
+const PUBLIC = ["/login", "/register", "/forgot-password", "/reset-password", "/privacy"];
 const SIGNED_OUT_ONLY = ["/login", "/register"];
 const PAGES = [
   "/", "/applications", "/applications?page=999", "/applications?q=zzz&status=offer&sort=company",
   "/applications/999999", "/applications/abc", "/interviews", "/interviews?past_page=99",
   "/interviews?edit=999999", "/interviews?schedule=2026-10-20", "/analytics", "/analytics?period=all",
   "/analytics?period=bogus", "/settings", "/login", "/login?deleted=1", "/register", "/forgot-password",
-  "/reset-password?uid=x&token=y",
+  "/reset-password?uid=x&token=y", "/privacy",
 ];
 const STATES = { "signed out": null, "stale cookie": "stale-token-from-another-device", "signed in": VALID };
 

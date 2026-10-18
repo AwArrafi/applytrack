@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { ChangePasswordForm } from "@/components/auth/PasswordForms";
 import { EmailForwardingCard } from "@/components/settings/EmailForwardingCard";
@@ -28,6 +29,9 @@ export default async function SettingsPage() {
       </Suspense>
       <ChangePasswordForm />
       <DeleteAccountForm />
+      <Link href="/privacy" className="block text-center text-xs text-ink-subtle hover:text-ink hover:underline">
+        {t.privacy.link}
+      </Link>
     </div>
   );
 }

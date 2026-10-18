@@ -33,12 +33,13 @@ export function StatCard({ label, value, icon: Icon, tone, chip, hint }: StatCar
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-3xl font-semibold tracking-tight text-ink tabular-nums sm:text-4xl">{value}</p>
         {chip && (
-          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${colors.chip}`}>
+          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold sm:text-xs ${colors.chip}`}>
             {chip}
           </span>
         )}
       </div>
-      {hint && <p className="mt-1 truncate text-xs text-ink-muted">{hint}</p>}
+      {/* Half-width cards on phones: let the hint wrap instead of cutting it off. */}
+      {hint && <p className="mt-1 text-xs text-ink-muted max-sm:line-clamp-2 sm:truncate">{hint}</p>}
     </div>
   );
 }
