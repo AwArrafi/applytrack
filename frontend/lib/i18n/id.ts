@@ -254,7 +254,7 @@ export const id = {
     backendDown: "Tidak dapat terhubung ke server. Pastikan backend sedang berjalan.",
     saveFailed: (status: number) => `Gagal menyimpan (status ${status}).`,
     deleteFailed: (status: number) => `Gagal menghapus (status ${status}).`,
-    tooManyAttempts: "Terlalu banyak percobaan. Silakan tunggu sebentar, lalu coba lagi.",
+    tooManyAttempts: "Terlalu banyak percobaan. Silakan tunggu beberapa menit, lalu coba lagi.",
     pageTitle: "Data tidak dapat dimuat",
     pageText: "Server ApplyTrack tidak merespons. Pastikan server Django sedang berjalan, lalu coba lagi.",
     retry: "Coba lagi",

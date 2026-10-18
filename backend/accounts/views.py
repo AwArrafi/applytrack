@@ -1,9 +1,13 @@
+import hashlib
+
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
+from django.core.cache import cache
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers, status
 from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import Throttled, ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -83,10 +87,26 @@ class RegisterView(AuthView):
         return session_response(user, status.HTTP_201_CREATED)
 
 
+# Per account, on top of the per-visitor 'auth' rate: someone guessing one account's password from
+# many IP addresses is stopped too. Counted for any email, registered or not, so it reveals nothing.
+MAX_FAILED_LOGINS = 5
+FAILED_LOGIN_WINDOW = 15 * 60  # seconds, from the first failure
+
+
 class LoginView(AuthView):
     def post(self, request):
+        email = str(request.data.get('email', '')).strip().lower()
+        # Hashed: the raw input could be any length or characters, cache keys can't.
+        key = 'failed-logins:' + hashlib.sha256(email.encode()).hexdigest()
+        if cache.get(key, 0) >= MAX_FAILED_LOGINS:
+            raise Throttled(detail=_('Too many failed sign-in attempts for this account. Try again in 15 minutes.'))
         serializer = LoginSerializer(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            if 'non_field_errors' in serializer.errors:  # a wrong password, not a malformed form
+                cache.add(key, 0, FAILED_LOGIN_WINDOW)
+                cache.incr(key)
+            raise ValidationError(serializer.errors)
+        cache.delete(key)
         return session_response(serializer.validated_data['user'], status.HTTP_200_OK)
 
 

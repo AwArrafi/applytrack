@@ -253,7 +253,7 @@ export const en: Dictionary = {
     backendDown: "Can't reach the server. Make sure the backend is running.",
     saveFailed: (status) => `Saving failed (status ${status}).`,
     deleteFailed: (status) => `Deleting failed (status ${status}).`,
-    tooManyAttempts: "Too many attempts. Please wait a moment and try again.",
+    tooManyAttempts: "Too many attempts. Please wait a few minutes and try again.",
     pageTitle: "Couldn't load your data",
     pageText: "The ApplyTrack server didn't respond. Make sure the Django server is running, then try again.",
     retry: "Try again",

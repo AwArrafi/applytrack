@@ -63,3 +63,9 @@ msgstr "Email ini belum dapat dikenali. Untuk sementara, ApplyTrack hanya bisa m
 
 msgid "Your password is incorrect."
 msgstr "Kata sandi Anda salah."
+
+msgid ""
+"Too many failed sign-in attempts for this account. Try again in 15 minutes."
+msgstr ""
+"Terlalu banyak percobaan masuk yang gagal untuk akun ini. Coba lagi dalam 15 "
+"menit."
