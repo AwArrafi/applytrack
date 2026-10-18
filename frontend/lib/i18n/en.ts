@@ -367,6 +367,13 @@ export const en: Dictionary = {
       unrecognized: "Not recognised",
     },
   },
+  privacy: {
+    title: "Privacy Policy",
+    link: "Privacy Policy",
+    lastUpdated: (date: string) => `Last updated ${date}`,
+    agreeBefore: "By creating an account, you agree to our ",
+    agreeAfter: ".",
+  },
   deleteAccount: {
     title: "Delete account",
     description: "Permanently remove your account and all your data from ApplyTrack.",

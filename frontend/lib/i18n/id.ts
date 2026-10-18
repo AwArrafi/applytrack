@@ -369,6 +369,13 @@ export const id = {
       unrecognized: "Tidak dikenali",
     },
   },
+  privacy: {
+    title: "Kebijakan Privasi",
+    link: "Kebijakan Privasi",
+    lastUpdated: (date: string) => `Terakhir diperbarui ${date}`,
+    agreeBefore: "Dengan membuat akun, Anda menyetujui ",
+    agreeAfter: " kami.",
+  },
   deleteAccount: {
     title: "Hapus akun",
     description: "Hapus akun dan seluruh data Anda dari ApplyTrack secara permanen.",
