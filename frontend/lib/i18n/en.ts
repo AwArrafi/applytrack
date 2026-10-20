@@ -407,6 +407,20 @@ export const en: Dictionary = {
     deleting: "Deleting…",
     done: "Your account and all its data have been deleted.",
   },
+  verifyEmail: {
+    title: "Check your email",
+    sentBefore: "We sent a verification link to ",
+    sentAfter: ". Open it to start using ApplyTrack.",
+    spam: "Can't find it? Check your spam folder, or send it again. The link works for 3 days.",
+    resend: "Send it again",
+    sending: "Sending…",
+    resent: "We sent the verification email again.",
+    done: "I've verified it",
+    otherEmail: "Sign out and use another email",
+    invalid: "This verification link is invalid or has expired. Send it again to get a new one.",
+    invalidSignedOut: "This verification link is invalid or has expired. Sign in to get a new one.",
+    verified: "Your email is verified. Please sign in.",
+  },
   settings: {
     title: "Settings",
     description: "Manage your profile and account preferences.",
@@ -485,7 +499,9 @@ export const en: Dictionary = {
       "This is your ApplyTrack password, not your Google account password. Other devices will be signed out; this one stays signed in.",
     setTitle: "Create a password",
     setHint:
-      "Your account was made with Google. Create an ApplyTrack password (not your Google password) to also sign in with your email.",
+      "Your account was made with Google. To also sign in with your email, create an ApplyTrack password (not your Google password). For your security, we email you the link.",
+    setButton: "Email me the link",
+    setSent: "Link sent. Open your email to create the password; the link works for 1 hour. Check your spam folder too.",
     changeDone: "Your password has been changed.",
   },
 };

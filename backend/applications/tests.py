@@ -16,7 +16,7 @@ class SignedInTestCase(APITestCase):
     """API tests run as a signed-in user, who owns the data the test creates."""
 
     def setUp(self):
-        self.user = User.objects.create_user('owner@example.com', 'a-strong-pass-123')
+        self.user = User.objects.create_user('owner@example.com', 'a-strong-pass-123', email_verified=True)
         self.client.force_authenticate(self.user)
 
     def make_application(self, user=None, **fields):
@@ -205,7 +205,7 @@ class OwnershipTests(SignedInTestCase):
 
     def setUp(self):
         super().setUp()
-        self.other = User.objects.create_user('other@example.com', 'a-strong-pass-123')
+        self.other = User.objects.create_user('other@example.com', 'a-strong-pass-123', email_verified=True)
         self.theirs = self.make_application(user=self.other, company_name='Their Co')
         self.their_interview = Interview.objects.create(
             application=self.theirs, scheduled_at=datetime(2026, 10, 20, 9, tzinfo=dt_timezone.utc)
@@ -358,7 +358,7 @@ class AnalyticsTests(SignedInTestCase):
         self.add('jobstreet', 8, [('applied', 8), ('rejected', 5)])                                  # E: CV rejected
         self.add('other', None, [('wishlist', 1)])                                                   # F: not applied
         self.add('other', 40, [('applied', 40)])                                                     # G: last period
-        other = User.objects.create_user('other@example.com', 'a-strong-pass-123')
+        other = User.objects.create_user('other@example.com', 'a-strong-pass-123', email_verified=True)
         self.add('linkedin', 2, [('applied', 2), ('offer', 1)], user=other)                          # not mine
 
     def get(self, period='30'):
@@ -494,7 +494,7 @@ class EmailImportTests(SignedInTestCase):
         self.assertEqual(Application.objects.count(), 1)
 
     def test_never_touches_another_users_application(self):
-        other = User.objects.create_user('other@example.com', 'a-strong-pass-123')
+        other = User.objects.create_user('other@example.com', 'a-strong-pass-123', email_verified=True)
         theirs = self.make_application(user=other, company_name='PT WOORI FINANCE INDONESIA TBK',
                                        job_title='Developer Front & Back End')
         self.assertEqual(self.import_text().json()['result'], 'created')

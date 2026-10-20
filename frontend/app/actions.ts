@@ -67,6 +67,7 @@ async function callApi(method: "POST" | "PATCH" | "DELETE", path: string, payloa
     await clearSessionToken();
     redirect("/login");
   }
+  if (response.status === 403) redirect("/verify-email"); // signed in, but the email isn't verified yet
   return response;
 }
 
@@ -192,6 +193,12 @@ export async function importEmail(_previous: ImportState, formData: FormData): P
   return { ...state, ...(await response.json()) };
 }
 
+/** Emails the verification link again (limited to a few per hour). */
+export async function resendVerification() {
+  const { t } = await currentI18n();
+  return toSaveState(await callApi("POST", "/auth/verify-email/resend/"), t.errors.saveFailed);
+}
+
 /** Asks Django to email a reset link. Same answer whether or not the email has an account. */
 export async function requestPasswordReset(_previous: SaveState, formData: FormData) {
   const { t } = await currentI18n();
@@ -208,15 +215,12 @@ export async function resetPassword(_previous: SaveState, formData: FormData) {
 export async function changePassword(_previous: SaveState, formData: FormData) {
   const { t } = await currentI18n();
   const response = await callApi("POST", "/auth/password-change/", {
-    current_password: formData.get("current_password") ?? undefined, // none yet: a Google account
+    current_password: formData.get("current_password"),
     new_password: formData.get("new_password"),
   });
   const state = await toSaveState(response, t.errors.saveFailed);
   // Django signed out every device and issued a new token for this one.
-  if (state.ok && response) {
-    await setSessionToken((await response.json()).token);
-    refresh(); // a first password (Google account) turns this into the usual change-password form
-  }
+  if (state.ok && response) await setSessionToken((await response.json()).token);
   return state;
 }
 

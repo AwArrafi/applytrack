@@ -8,6 +8,7 @@ export const SESSION_COOKIE = "session";
 /** Pages anyone can open; everything else needs a session (checked in proxy.ts). */
 export const PUBLIC_PATHS = [
   "/login", "/register", "/forgot-password", "/reset-password", "/privacy", "/auth/google", "/auth/google/callback",
+  "/verify-email/confirm",
 ];
 /** Ties Google's answer to the sign-in this browser started (app/[lang]/auth/google/). */
 export const GOOGLE_STATE_COOKIE = "google_state";

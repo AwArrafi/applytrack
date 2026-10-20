@@ -21,7 +21,9 @@ from rest_framework.routers import DefaultRouter
 
 from accounts.google import GoogleLoginView
 from accounts.passwords import PasswordChangeView, PasswordResetConfirmView, PasswordResetRequestView
-from accounts.views import DeleteAccountView, LoginView, LogoutView, MeView, RegisterView
+from accounts.views import (
+    DeleteAccountView, LoginView, LogoutView, MeView, RegisterView, ResendVerificationView, VerifyEmailView,
+)
 from applications.inbound import EmailForwardingView, InboundEmailView
 from applications.views import AnalyticsView, ApplicationViewSet, DashboardView, InterviewViewSet
 
@@ -39,6 +41,8 @@ urlpatterns = [
     path('api/auth/google/', GoogleLoginView.as_view()),
     path('api/auth/logout/', LogoutView.as_view()),
     path('api/auth/me/', MeView.as_view()),
+    path('api/auth/verify-email/', VerifyEmailView.as_view()),
+    path('api/auth/verify-email/resend/', ResendVerificationView.as_view()),
     path('api/auth/delete-account/', DeleteAccountView.as_view()),
     path('api/auth/password-reset/', PasswordResetRequestView.as_view()),
     path('api/auth/password-reset/confirm/', PasswordResetConfirmView.as_view()),

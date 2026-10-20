@@ -1,18 +1,21 @@
 import base64
 import io
 import json
+import time
 import urllib.error
 import urllib.parse
 from datetime import timedelta
 from unittest import mock
 
-from django.core import mail
+from django.core import mail, signing
 from django.core.cache import cache
-from django.test import override_settings
+from django.test import TestCase, override_settings
+from django.urls import reverse
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
+from . import verification
 from .google import TOKEN_URL
 from .models import User
 
@@ -21,7 +24,7 @@ from .models import User
 class AuthApiTests(APITestCase):
     def setUp(self):
         cache.clear()  # throttle counters live in the cache
-        self.user = User.objects.create_user('rafi@example.com', 'a-strong-pass-123', name='Rafi')
+        self.user = User.objects.create_user('rafi@example.com', 'a-strong-pass-123', name='Rafi', email_verified=True)
 
     def login(self, email='rafi@example.com', password='a-strong-pass-123'):
         return self.client.post('/api/auth/login/', {'email': email, 'password': password}, format='json')
@@ -77,7 +80,7 @@ class AuthApiTests(APITestCase):
 class SettingsTests(APITestCase):
     def setUp(self):
         cache.clear()  # earlier tests' sign-in attempts would otherwise count against the throttle
-        self.user = User.objects.create_user('rafi@example.com', 'a-strong-pass-123')
+        self.user = User.objects.create_user('rafi@example.com', 'a-strong-pass-123', email_verified=True)
         self.client.force_authenticate(self.user)
 
     def patch(self, **fields):
@@ -109,7 +112,7 @@ class SettingsTests(APITestCase):
 @override_settings(PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'], TIME_ZONE='Asia/Jakarta')
 class UserTimeZoneTests(APITestCase):
     def signed_in(self, email, time_zone):
-        user = User.objects.create_user(email, 'a-strong-pass-123', time_zone=time_zone)
+        user = User.objects.create_user(email, 'a-strong-pass-123', time_zone=time_zone, email_verified=True)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {Token.objects.create(user=user).key}')
         return user
 
@@ -135,7 +138,7 @@ class UserTimeZoneTests(APITestCase):
 class PasswordResetTests(APITestCase):
     def setUp(self):
         cache.clear()
-        self.user = User.objects.create_user('rafi@example.com', 'old-pass-123456', name='Rafi')
+        self.user = User.objects.create_user('rafi@example.com', 'old-pass-123456', name='Rafi', email_verified=True)
         Token.objects.create(user=self.user)  # an existing sign-in somewhere
 
     def request_reset(self, email='rafi@example.com'):
@@ -199,8 +202,8 @@ class DeleteAccountTests(APITestCase):
     def setUp(self):
         from applications.models import Application, ForwardedEmail, Interview, StatusChange
         self.models = [Application, Interview, StatusChange, ForwardedEmail]
-        self.user = User.objects.create_user('leaving@example.com', 'a-strong-pass-123')
-        self.other = User.objects.create_user('staying@example.com', 'a-strong-pass-123')
+        self.user = User.objects.create_user('leaving@example.com', 'a-strong-pass-123', email_verified=True)
+        self.other = User.objects.create_user('staying@example.com', 'a-strong-pass-123', email_verified=True)
         for owner in (self.user, self.other):
             app = Application.objects.create(user=owner, company_name='Acme', job_title='Dev')
             Interview.objects.create(application=app, scheduled_at=timezone.now())
@@ -235,7 +238,7 @@ class FailedLoginLimitTests(APITestCase):
 
     def setUp(self):
         cache.clear()
-        User.objects.create_user('target@example.com', 'the-right-pass-123')
+        User.objects.create_user('target@example.com', 'the-right-pass-123', email_verified=True)
 
     def login(self, password, email='target@example.com', ip='1.1.1.1'):
         return self.client.post('/api/auth/login/', {'email': email, 'password': password}, format='json', REMOTE_ADDR=ip)
@@ -300,14 +303,14 @@ class GoogleLoginTests(APITestCase):
         self.assertEqual(self.sent['redirect_uri'], ['https://app.example/auth/google/callback'])
 
     def test_signs_in_an_existing_account_with_that_email(self):
-        user = User.objects.create_user('rafi@gmail.com', 'a-strong-pass-123')
+        user = User.objects.create_user('rafi@gmail.com', 'a-strong-pass-123', email_verified=True)
         response = self.sign_in(email='rafi@gmail.com')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Token.objects.get(key=response.json()['token']).user, user)
         self.assertTrue(response.json()['user']['has_password'])  # the password still works too
 
     def test_rejects_unverified_emails_other_clients_and_inactive_accounts(self):
-        User.objects.create_user('gone@gmail.com', is_active=False)
+        User.objects.create_user('gone@gmail.com', is_active=False, email_verified=True)
         for claims in [
             {'email': 'x@gmail.com', 'email_verified': False},
             {'email': 'x@gmail.com', 'aud': 'someone-elses-client'},
@@ -340,12 +343,22 @@ class AccountWithoutPasswordTests(APITestCase):
 
     def setUp(self):
         cache.clear()
-        self.user = User.objects.create_user('google@gmail.com')
+        self.user = User.objects.create_user('google@gmail.com', email_verified=True)
         self.client.force_authenticate(self.user)
 
-    def test_sets_a_first_password_without_a_current_one(self):
+    def test_a_first_password_needs_the_emailed_link_not_just_the_session(self):
         response = self.client.post('/api/auth/password-change/', {'new_password': 'brand-new-pass-789'}, format='json')
-        self.assertEqual(response.status_code, 200)
+        self.assertIn('current_password', response.json())
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.has_usable_password())
+
+        self.client.post('/api/auth/password-reset/', {'email': 'google@gmail.com'}, format='json')
+        link = mail.outbox[-1].body.split('reset-password?')[1].split()[0]
+        params = dict(pair.split('=', 1) for pair in link.split('&'))
+        response = self.client.post(
+            '/api/auth/password-reset/confirm/', {**params, 'password': 'brand-new-pass-789'}, format='json'
+        )
+        self.assertEqual(response.status_code, 204)
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password('brand-new-pass-789'))
 
@@ -358,9 +371,111 @@ class AccountWithoutPasswordTests(APITestCase):
         self.assertFalse(User.objects.filter(pk=self.user.pk).exists())
 
     def test_a_password_account_still_needs_its_current_password(self):
-        user = User.objects.create_user('pw@example.com', 'a-strong-pass-123')
+        user = User.objects.create_user('pw@example.com', 'a-strong-pass-123', email_verified=True)
         self.client.force_authenticate(user)
         response = self.client.post('/api/auth/password-change/', {'new_password': 'brand-new-pass-789'}, format='json')
         self.assertIn('current_password', response.json())
         response = self.client.post('/api/auth/delete-account/', {'email': 'pw@example.com'}, format='json')
         self.assertIn('password', response.json())
+
+
+@override_settings(PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
+class EmailVerificationTests(APITestCase):
+    """New password accounts are locked to the "check your email" page until the link is opened."""
+
+    def setUp(self):
+        cache.clear()
+
+    def register(self):
+        response = self.client.post(
+            '/api/auth/register/', {'email': 'new@example.com', 'password': 'a-strong-pass-123'}, format='json'
+        )
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {response.json()['token']}")
+        return response
+
+    def link_token(self):
+        """The token from the newest email's link."""
+        return mail.outbox[-1].body.split('token=')[1].split()[0]
+
+    def test_sign_up_emails_a_link_and_locks_the_app_until_it_is_opened(self):
+        self.assertFalse(self.register().json()['user']['email_verified'])
+        self.assertIn('/verify-email/confirm?token=', mail.outbox[0].body)
+        self.assertEqual(self.client.get('/api/applications/').status_code, 403)
+        self.assertEqual(self.client.get('/api/auth/me/').status_code, 200)  # still knows who it is
+
+        self.client.credentials()  # the link works signed out, e.g. opened on a phone
+        self.assertEqual(self.client.post('/api/auth/verify-email/', {'token': self.link_token()}).status_code, 204)
+        self.assertTrue(User.objects.get(email='new@example.com').email_verified)
+
+    def test_unlocks_after_verifying(self):
+        self.register()
+        self.client.post('/api/auth/verify-email/', {'token': self.link_token()})
+        self.assertEqual(self.client.get('/api/applications/').status_code, 200)
+
+    def test_rejects_forged_expired_and_other_address_links(self):
+        self.register()
+        user = User.objects.get(email='new@example.com')
+        forged = self.link_token()[:-2] + 'xx'
+        other_address = signing.dumps({'user': user.pk, 'email': 'someone@else.com'}, salt=verification.SALT)
+        with mock.patch('django.core.signing.time.time', return_value=time.time() + 4 * 24 * 60 * 60):
+            expired = self.client.post('/api/auth/verify-email/', {'token': self.link_token()})
+        for response in [expired] + [self.client.post('/api/auth/verify-email/', {'token': t}) for t in (forged, other_address)]:
+            self.assertEqual(response.status_code, 400)
+            self.assertIn('token', response.json())
+        user.refresh_from_db()
+        self.assertFalse(user.email_verified)
+
+    def test_resend_sends_a_new_link_but_not_endlessly(self):
+        self.register()
+        statuses = [self.client.post('/api/auth/verify-email/resend/').status_code for _ in range(6)]
+        self.assertEqual(statuses, [204] * 5 + [429])
+        self.assertEqual(len(mail.outbox), 6)  # sign-up + 5 resends
+
+    def test_a_password_reset_also_verifies(self):
+        user = User.objects.create_user('new@example.com', 'a-strong-pass-123')
+        self.client.post('/api/auth/password-reset/', {'email': 'new@example.com'}, format='json')
+        link = mail.outbox[-1].body.split('reset-password?')[1].split()[0]
+        params = dict(pair.split('=', 1) for pair in link.split('&'))
+        self.client.post('/api/auth/password-reset/confirm/', {**params, 'password': 'brand-new-pass-789'}, format='json')
+        user.refresh_from_db()
+        self.assertTrue(user.email_verified)
+
+    @override_settings(GOOGLE_CLIENT_ID='test-client', GOOGLE_CLIENT_SECRET='test-secret')
+    def test_google_takes_an_unverified_account_back_from_whoever_made_it(self):
+        squatter = User.objects.create_user('victim@gmail.com', 'squatters-pass-123')
+        squatter_token = Token.objects.create(user=squatter)
+        with mock.patch('urllib.request.urlopen', return_value=google_token_response(email='victim@gmail.com')):
+            response = self.client.post(
+                '/api/auth/google/', {'code': 'c', 'redirect_uri': 'https://app.example/cb'}, format='json'
+            )
+        self.assertEqual(response.status_code, 200)
+        squatter.refresh_from_db()
+        self.assertTrue(squatter.email_verified)
+        self.assertFalse(squatter.has_usable_password())  # the squatter's password no longer works
+        self.assertFalse(Token.objects.filter(key=squatter_token.key).exists())
+
+
+class AdminLoginLimitTests(TestCase):
+    """The Django admin's sign-in shares the app's per-account lock."""
+
+    def setUp(self):
+        cache.clear()
+        User.objects.create_superuser('boss@example.com', 'the-right-pass-123')
+
+    def sign_in(self, password):
+        return self.client.post(reverse('admin:login'), {'username': 'boss@example.com', 'password': password})
+
+    def test_locks_after_five_wrong_passwords_even_with_the_right_one(self):
+        for _ in range(5):
+            self.assertEqual(self.sign_in('wrong').status_code, 200)  # the form again, with an error
+        response = self.sign_in('the-right-pass-123')
+        self.assertEqual(response.context['form'].non_field_errors().as_data()[0].code, 'locked')
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_a_right_password_signs_in_and_resets_the_count(self):
+        for _ in range(4):
+            self.sign_in('wrong')
+        self.assertEqual(self.sign_in('the-right-pass-123').status_code, 302)  # into the admin
+        self.client.logout()
+        self.sign_in('wrong')
+        self.assertEqual(self.sign_in('the-right-pass-123').status_code, 302)

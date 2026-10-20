@@ -90,7 +90,7 @@ class InboundEmailTests(SignedInTestCase):
 
     def test_each_user_only_sees_their_own_forwarded_emails(self):
         self.deliver(raw_email(JOBSTREET_APPLIED))
-        other = User.objects.create_user('other@example.com', 'a-strong-pass-123')
+        other = User.objects.create_user('other@example.com', 'a-strong-pass-123', email_verified=True)
         self.client.force_authenticate(other)
         self.assertEqual(self.client.get('/api/email-forwarding/').json()['recent'], [])
         self.assertNotEqual(other.inbound_token, self.user.inbound_token)

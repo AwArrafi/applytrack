@@ -167,8 +167,8 @@ export function ResetPasswordForm({ uid, token }: { uid: string; token: string }
   );
 }
 
-/** Settings card: change the password, or create a first one for an account made with Google. */
-export function ChangePasswordForm({ hasPassword }: { hasPassword: boolean }) {
+/** Settings card: change the password while signed in. */
+export function ChangePasswordForm() {
   const { t } = useI18n();
   const a = t.auth;
   const { state, pending, formRef, onSubmit, generalErrors, mismatch, clearMismatch } = usePasswordForm(changePassword, [
@@ -177,13 +177,11 @@ export function ChangePasswordForm({ hasPassword }: { hasPassword: boolean }) {
   ]);
 
   return (
-    <Card title={hasPassword ? a.changeTitle : a.setTitle} description={hasPassword ? a.changeHint : a.setHint}>
+    <Card title={a.changeTitle} description={a.changeHint}>
       <form ref={formRef} onSubmit={onSubmit} className="space-y-4">
-        {hasPassword && (
-          <Field label={a.currentPassword} htmlFor="change-current" errors={state.errors.current_password}>
-            <PasswordInput id="change-current" name="current_password" required autoComplete="current-password" className="sm:max-w-[calc(50%-0.5rem)]" />
-          </Field>
-        )}
+        <Field label={a.currentPassword} htmlFor="change-current" errors={state.errors.current_password}>
+          <PasswordInput id="change-current" name="current_password" required autoComplete="current-password" className="sm:max-w-[calc(50%-0.5rem)]" />
+        </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={a.newPassword} htmlFor="change-new" errors={state.errors.new_password}>
             <PasswordInput id="change-new" name="new_password" required minLength={8} autoComplete="new-password" />
@@ -200,6 +198,33 @@ export function ChangePasswordForm({ hasPassword }: { hasPassword: boolean }) {
             {pending ? t.common.saving : a.savePassword}
           </button>
         </div>
+      </form>
+    </Card>
+  );
+}
+
+/**
+ * Settings card for an account made with Google, which has no password yet: the first one is
+ * made through the emailed reset link, so only whoever reads that inbox can add one (a stolen
+ * session alone can't).
+ */
+export function SetPasswordByEmailCard({ email }: { email: string }) {
+  const { t } = useI18n();
+  const a = t.auth;
+  const { state, pending, onSubmit, generalErrors } = usePasswordForm(requestPasswordReset);
+
+  return (
+    <Card title={a.setTitle} description={a.setHint}>
+      <form onSubmit={onSubmit} className="flex flex-wrap items-center justify-end gap-3">
+        <input type="hidden" name="email" value={email} />
+        <Messages errors={generalErrors} success={state.ok && !pending ? a.setSent : undefined} />
+        <button
+          type="submit"
+          disabled={pending}
+          className="shrink-0 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:cursor-wait disabled:opacity-60"
+        >
+          {pending ? a.sending : a.setButton}
+        </button>
       </form>
     </Card>
   );

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { ChangePasswordForm } from "@/components/auth/PasswordForms";
+import { ChangePasswordForm, SetPasswordByEmailCard } from "@/components/auth/PasswordForms";
 import { EmailForwardingCard } from "@/components/settings/EmailForwardingCard";
 import { DeleteAccountForm } from "@/components/settings/DeleteAccountForm";
 import { SettingsForm } from "@/components/settings/SettingsForm";
@@ -39,10 +39,10 @@ export default async function SettingsPage() {
 
 /** Accounts made with Google have no password yet; these two forms ask differently then. */
 async function AccountForms() {
-  const { has_password } = await getCurrentUser();
+  const { has_password, email } = await getCurrentUser();
   return (
     <>
-      <ChangePasswordForm hasPassword={has_password} />
+      {has_password ? <ChangePasswordForm /> : <SetPasswordByEmailCard email={email} />}
       <DeleteAccountForm hasPassword={has_password} />
     </>
   );

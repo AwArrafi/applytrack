@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { apiGet, getCurrentUser } from "@/lib/api";
@@ -26,6 +27,7 @@ export default async function AppLayout({ children }: LayoutProps<"/[lang]">) {
 
 async function SignedInShell({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser(); // redirects to /login when the session is gone
+  if (!user.email_verified) redirect("/verify-email"); // new accounts open the emailed link first
   // Not awaited: the sidebar shows the counts once they arrive, and hides them if the API is down.
   const navCounts = apiGet<DashboardSummary>("/dashboard/")
     .then((s) => ({ applications: s.total_applications, upcomingInterviews: s.upcoming_interview_count }))
