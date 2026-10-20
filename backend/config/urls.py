@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
+from accounts.google import GoogleLoginView
 from accounts.passwords import PasswordChangeView, PasswordResetConfirmView, PasswordResetRequestView
 from accounts.views import DeleteAccountView, LoginView, LogoutView, MeView, RegisterView
 from applications.inbound import EmailForwardingView, InboundEmailView
@@ -35,6 +36,7 @@ urlpatterns = [
     path('api/health/', HealthView.as_view()),
     path('api/auth/register/', RegisterView.as_view()),
     path('api/auth/login/', LoginView.as_view()),
+    path('api/auth/google/', GoogleLoginView.as_view()),
     path('api/auth/logout/', LogoutView.as_view()),
     path('api/auth/me/', MeView.as_view()),
     path('api/auth/delete-account/', DeleteAccountView.as_view()),

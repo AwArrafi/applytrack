@@ -1,4 +1,10 @@
+import base64
+import io
+import json
+import urllib.error
+import urllib.parse
 from datetime import timedelta
+from unittest import mock
 
 from django.core import mail
 from django.core.cache import cache
@@ -7,6 +13,7 @@ from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
+from .google import TOKEN_URL
 from .models import User
 
 
@@ -259,3 +266,101 @@ class FailedLoginLimitTests(APITestCase):
         for _ in range(6):
             self.client.post('/api/auth/login/', {'email': 'target@example.com'}, format='json')  # no password
         self.assertEqual(self.login('the-right-pass-123').status_code, 200)
+
+
+def google_token_response(**claims):
+    """What Google's token endpoint answers: an ID token whose middle part holds the claims."""
+    claims = {'iss': 'https://accounts.google.com', 'aud': 'test-client', 'email_verified': True, **claims}
+    payload = base64.urlsafe_b64encode(json.dumps(claims).encode()).decode().rstrip('=')
+    return io.BytesIO(json.dumps({'id_token': f'header.{payload}.signature'}).encode())
+
+
+@override_settings(GOOGLE_CLIENT_ID='test-client', GOOGLE_CLIENT_SECRET='test-secret')
+class GoogleLoginTests(APITestCase):
+    def setUp(self):
+        cache.clear()
+
+    def sign_in(self, language='en', **claims):
+        with mock.patch('urllib.request.urlopen', return_value=google_token_response(**claims)) as urlopen:
+            response = self.client.post(
+                '/api/auth/google/',
+                {'code': 'one-time-code', 'redirect_uri': 'https://app.example/auth/google/callback', 'language': language},
+                format='json',
+            )
+        self.sent = urllib.parse.parse_qs(urlopen.call_args.kwargs['data'].decode()) if urlopen.called else None
+        return response
+
+    def test_first_sign_in_creates_an_account_without_a_password(self):
+        response = self.sign_in(email='New@Gmail.com', name='Budi')
+        self.assertEqual(response.status_code, 201)
+        user = User.objects.get(email='new@gmail.com')
+        self.assertEqual((user.name, user.language), ('Budi', 'en'))
+        self.assertFalse(response.json()['user']['has_password'])
+        self.assertEqual(self.sent['client_secret'], ['test-secret'])
+        self.assertEqual(self.sent['redirect_uri'], ['https://app.example/auth/google/callback'])
+
+    def test_signs_in_an_existing_account_with_that_email(self):
+        user = User.objects.create_user('rafi@gmail.com', 'a-strong-pass-123')
+        response = self.sign_in(email='rafi@gmail.com')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Token.objects.get(key=response.json()['token']).user, user)
+        self.assertTrue(response.json()['user']['has_password'])  # the password still works too
+
+    def test_rejects_unverified_emails_other_clients_and_inactive_accounts(self):
+        User.objects.create_user('gone@gmail.com', is_active=False)
+        for claims in [
+            {'email': 'x@gmail.com', 'email_verified': False},
+            {'email': 'x@gmail.com', 'aud': 'someone-elses-client'},
+            {'email': 'x@gmail.com', 'iss': 'https://evil.example'},
+            {'email': 'gone@gmail.com'},
+        ]:
+            with self.subTest(claims=claims):
+                response = self.sign_in(**claims)
+                self.assertEqual(response.status_code, 400)
+                self.assertIn('non_field_errors', response.json())
+        self.assertFalse(User.objects.filter(email='x@gmail.com').exists())
+
+    def test_a_code_google_refuses_is_a_normal_error(self):
+        error = urllib.error.HTTPError(TOKEN_URL, 400, 'invalid_grant', {}, io.BytesIO(b'{}'))
+        with mock.patch('urllib.request.urlopen', side_effect=error), self.assertLogs('accounts.google', 'WARNING'):
+            response = self.client.post(
+                '/api/auth/google/', {'code': 'used', 'redirect_uri': 'https://app.example/cb'}, format='json'
+            )
+        self.assertEqual(response.status_code, 400)
+
+    @override_settings(GOOGLE_CLIENT_ID='')
+    def test_off_without_a_client_id(self):
+        self.assertEqual(self.sign_in(email='x@gmail.com').status_code, 400)
+        self.assertIsNone(self.sent)  # Google wasn't even asked
+
+
+@override_settings(PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
+class AccountWithoutPasswordTests(APITestCase):
+    """Accounts made with Google: Settings confirms with the email, and can set a first password."""
+
+    def setUp(self):
+        cache.clear()
+        self.user = User.objects.create_user('google@gmail.com')
+        self.client.force_authenticate(self.user)
+
+    def test_sets_a_first_password_without_a_current_one(self):
+        response = self.client.post('/api/auth/password-change/', {'new_password': 'brand-new-pass-789'}, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('brand-new-pass-789'))
+
+    def test_delete_account_asks_for_the_email(self):
+        wrong = self.client.post('/api/auth/delete-account/', {'email': 'someone@gmail.com'}, format='json')
+        self.assertEqual(wrong.status_code, 400)
+        self.assertIn('email', wrong.json())
+        right = self.client.post('/api/auth/delete-account/', {'email': ' Google@Gmail.com '}, format='json')
+        self.assertEqual(right.status_code, 204)
+        self.assertFalse(User.objects.filter(pk=self.user.pk).exists())
+
+    def test_a_password_account_still_needs_its_current_password(self):
+        user = User.objects.create_user('pw@example.com', 'a-strong-pass-123')
+        self.client.force_authenticate(user)
+        response = self.client.post('/api/auth/password-change/', {'new_password': 'brand-new-pass-789'}, format='json')
+        self.assertIn('current_password', response.json())
+        response = self.client.post('/api/auth/delete-account/', {'email': 'pw@example.com'}, format='json')
+        self.assertIn('password', response.json())

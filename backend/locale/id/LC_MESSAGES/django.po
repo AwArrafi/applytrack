@@ -69,3 +69,9 @@ msgid ""
 msgstr ""
 "Terlalu banyak percobaan masuk yang gagal untuk akun ini. Coba lagi dalam 15 "
 "menit."
+
+msgid "Could not sign in with Google. Please try again."
+msgstr "Gagal masuk dengan Google. Silakan coba lagi."
+
+msgid "This is not your account's email."
+msgstr "Email ini bukan email akun Anda."

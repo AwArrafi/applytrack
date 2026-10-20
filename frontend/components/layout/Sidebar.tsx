@@ -225,10 +225,10 @@ function CountBadge({ counts, name }: { counts: Promise<NavCounts | null>; name:
 }
 
 /** ID / EN toggle; the choice is saved in a cookie and applies to every page. */
-export function LanguageSwitcher() {
+export function LanguageSwitcher({ className = "mt-3" }: { className?: string }) {
   const { t, locale } = useI18n();
   return (
-    <div role="group" aria-label={t.nav.language} className="mt-3 flex items-center justify-between px-1 text-xs">
+    <div role="group" aria-label={t.nav.language} className={`${className} flex items-center justify-between gap-3 px-1 text-xs`}>
       <span className="text-ink-muted">{t.nav.language}</span>
       <div className="flex rounded-lg border border-line p-0.5">
         {LOCALES.map((option) => (

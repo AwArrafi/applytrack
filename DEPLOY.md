@@ -118,6 +118,15 @@ Remove-Item Env:DATABASE_URL
 4. Render: `INBOUND_EMAIL_DOMAIN` = `inbound.applytrack.my.id`, `INBOUND_EMAIL_SECRET` = rahasia #3.
 5. Uji saat Render sedang tidur: teruskan satu email JobStreet, cek lamarannya masuk.
 
+## 10. Masuk dengan Google
+
+1. [Google Cloud Console](https://console.cloud.google.com) → project baru **ApplyTrack**.
+2. **Google Auth Platform → Branding** (layar persetujuan): nama ApplyTrack, email dukungan, domain `applytrack.my.id`, link privasi `https://applytrack.my.id/privacy`. **Audience**: External, lalu **Publish app** (izin `openid email profile` tidak perlu verifikasi Google).
+3. **Clients → Create client** → *Web application*. *Authorized redirect URIs*:
+   `https://applytrack.my.id/auth/google/callback` dan `http://localhost:3000/auth/google/callback`.
+4. Render: `GOOGLE_CLIENT_ID` dan `GOOGLE_CLIENT_SECRET`. Vercel: `GOOGLE_CLIENT_ID` saja, lalu **Redeploy** (tombolnya baru muncul setelah build ulang).
+5. Uji: masuk dengan Google memakai akun baru dan akun yang emailnya sudah terdaftar.
+
 ## Setiap deploy berikutnya
 
 - Merge PR ke `main` → Render dan Vercel deploy otomatis.

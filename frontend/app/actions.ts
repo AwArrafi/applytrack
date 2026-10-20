@@ -4,18 +4,14 @@ import { refresh } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { API_TIMEOUT_MS, apiHeaders, apiUrl } from "@/lib/api";
-import { DEFAULT_LOCALE, getI18n, isLocale, LOCALE_COOKIE, type Locale } from "@/lib/i18n";
-import { clearSessionToken, getSessionToken, setSessionToken } from "@/lib/session";
+import { DEFAULT_LOCALE, getI18n, isLocale, LOCALE_COOKIE } from "@/lib/i18n";
+import { clearSessionToken, getSessionToken, setLocaleCookie, setSessionToken } from "@/lib/session";
 import type { Application } from "@/lib/types";
 
 // Server Actions can't read the [lang] route segment, so they use the same cookie proxy.ts reads.
 async function currentI18n() {
   const saved = (await cookies()).get(LOCALE_COOKIE)?.value;
   return getI18n(isLocale(saved) ? saved : DEFAULT_LOCALE);
-}
-
-async function setLocaleCookie(locale: Locale) {
-  (await cookies()).set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
 }
 
 export interface SaveState {
@@ -212,19 +208,26 @@ export async function resetPassword(_previous: SaveState, formData: FormData) {
 export async function changePassword(_previous: SaveState, formData: FormData) {
   const { t } = await currentI18n();
   const response = await callApi("POST", "/auth/password-change/", {
-    current_password: formData.get("current_password"),
+    current_password: formData.get("current_password") ?? undefined, // none yet: a Google account
     new_password: formData.get("new_password"),
   });
   const state = await toSaveState(response, t.errors.saveFailed);
   // Django signed out every device and issued a new token for this one.
-  if (state.ok && response) await setSessionToken((await response.json()).token);
+  if (state.ok && response) {
+    await setSessionToken((await response.json()).token);
+    refresh(); // a first password (Google account) turns this into the usual change-password form
+  }
   return state;
 }
 
 /** Deletes the account and all its data in Django, then signs out here too. */
 export async function deleteAccount(_previous: SaveState, formData: FormData) {
   const { t } = await currentI18n();
-  const response = await callApi("POST", "/auth/delete-account/", { password: formData.get("password") });
+  // Accounts made with Google have no password and confirm with their email instead.
+  const response = await callApi("POST", "/auth/delete-account/", {
+    password: formData.get("password") ?? undefined,
+    email: formData.get("email") ?? undefined,
+  });
   const state = await toSaveState(response, t.errors.saveFailed);
   if (!state.ok) return state;
   await clearSessionToken();

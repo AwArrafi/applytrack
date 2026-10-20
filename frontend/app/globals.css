@@ -70,3 +70,11 @@ dialog::backdrop {
   background-color: rgb(19 27 46 / 0.4);
   backdrop-filter: blur(2px);
 }
+
+/* Faint graph-paper lines behind the sign-in pages (Stitch login design). */
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(79 70 229 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(79 70 229 / 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}

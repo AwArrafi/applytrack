@@ -392,7 +392,7 @@ export const en: Dictionary = {
     link: "Privacy Policy",
     back: "Back to ApplyTrack",
     lastUpdated: (date: string) => `Last updated ${date}`,
-    agreeBefore: "By creating an account, you agree to our ",
+    agreeBefore: "By continuing, you agree to the ApplyTrack ",
     agreeAfter: ".",
   },
   deleteAccount: {
@@ -401,6 +401,7 @@ export const en: Dictionary = {
     whatIsDeleted:
       "All your applications, interviews, status history, notes, and forwarded emails are deleted with it. This can't be undone.",
     password: "Your password",
+    email: "Type your account's email to confirm",
     confirm: "I understand my account and all my data will be permanently deleted.",
     submit: "Delete my account",
     deleting: "Deleting…",
@@ -436,7 +437,14 @@ export const en: Dictionary = {
     showPassword: "Show password",
     hidePassword: "Hide password",
     loginTitle: "Sign in to ApplyTrack",
-    loginDescription: "Pick up where you left off with your job search.",
+    loginDescription: "Welcome back. Pick up where you left off with your job search.",
+    googleLogin: "Sign in with Google",
+    googleRegister: "Sign up with Google",
+    googleFailed: "Signing in with Google didn't work. Please try again, or sign in with your email.",
+    or: "or",
+    showcaseTitle: "All your job applications, organised in one place.",
+    showcaseCard: "Active applications",
+    showcaseCount: "12 applications",
     registerTitle: "Create your ApplyTrack account",
     registerDescription: "Free. Keep your applications, interviews, and results in one place.",
     name: "Name",
@@ -473,7 +481,11 @@ export const en: Dictionary = {
     requestNewLink: "Ask for a new link",
     changeTitle: "Change password",
     currentPassword: "Current password",
-    changeHint: "Other devices will be signed out; this one stays signed in.",
+    changeHint:
+      "This is your ApplyTrack password, not your Google account password. Other devices will be signed out; this one stays signed in.",
+    setTitle: "Create a password",
+    setHint:
+      "Your account was made with Google. Create an ApplyTrack password (not your Google password) to also sign in with your email.",
     changeDone: "Your password has been changed.",
   },
 };

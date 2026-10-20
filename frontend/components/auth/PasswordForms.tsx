@@ -52,7 +52,7 @@ function SubmitButton({ pending, label, pendingLabel }: { pending: boolean; labe
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:cursor-wait disabled:opacity-60"
+      className="w-full rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:cursor-wait disabled:opacity-60"
     >
       {pending ? pendingLabel : label}
     </button>
@@ -86,7 +86,7 @@ export function ForgotPasswordForm() {
 
   return (
     <>
-      <h1 className="text-lg font-semibold tracking-tight text-ink">{a.forgotTitle}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight text-ink">{a.forgotTitle}</h1>
       <p className="mt-1 text-sm text-ink-muted">{a.forgotDescription}</p>
       {state.ok ? (
         <p role="status" className="mt-6 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{a.forgotSent}</p>
@@ -118,7 +118,7 @@ export function ResetPasswordForm({ uid, token }: { uid: string; token: string }
   if (!uid || !token) {
     return (
       <>
-        <h1 className="text-lg font-semibold tracking-tight text-ink">{a.resetTitle}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">{a.resetTitle}</h1>
         <p className="mt-4 text-sm text-rose-700">{a.resetMissing}</p>
         <Link href="/forgot-password" className="mt-4 inline-block text-sm font-medium text-primary-700 hover:underline">{a.requestNewLink}</Link>
       </>
@@ -127,7 +127,7 @@ export function ResetPasswordForm({ uid, token }: { uid: string; token: string }
 
   return (
     <>
-      <h1 className="text-lg font-semibold tracking-tight text-ink">{a.resetTitle}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight text-ink">{a.resetTitle}</h1>
       <p className="mt-1 text-sm text-ink-muted">{a.resetDescription}</p>
       {state.ok ? (
         <>
@@ -167,8 +167,8 @@ export function ResetPasswordForm({ uid, token }: { uid: string; token: string }
   );
 }
 
-/** Settings card: change the password while signed in. */
-export function ChangePasswordForm() {
+/** Settings card: change the password, or create a first one for an account made with Google. */
+export function ChangePasswordForm({ hasPassword }: { hasPassword: boolean }) {
   const { t } = useI18n();
   const a = t.auth;
   const { state, pending, formRef, onSubmit, generalErrors, mismatch, clearMismatch } = usePasswordForm(changePassword, [
@@ -177,11 +177,13 @@ export function ChangePasswordForm() {
   ]);
 
   return (
-    <Card title={a.changeTitle} description={a.changeHint}>
+    <Card title={hasPassword ? a.changeTitle : a.setTitle} description={hasPassword ? a.changeHint : a.setHint}>
       <form ref={formRef} onSubmit={onSubmit} className="space-y-4">
-        <Field label={a.currentPassword} htmlFor="change-current" errors={state.errors.current_password}>
-          <PasswordInput id="change-current" name="current_password" required autoComplete="current-password" className="sm:max-w-[calc(50%-0.5rem)]" />
-        </Field>
+        {hasPassword && (
+          <Field label={a.currentPassword} htmlFor="change-current" errors={state.errors.current_password}>
+            <PasswordInput id="change-current" name="current_password" required autoComplete="current-password" className="sm:max-w-[calc(50%-0.5rem)]" />
+          </Field>
+        )}
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={a.newPassword} htmlFor="change-new" errors={state.errors.new_password}>
             <PasswordInput id="change-new" name="new_password" required minLength={8} autoComplete="new-password" />

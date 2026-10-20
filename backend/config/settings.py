@@ -244,6 +244,11 @@ FRONTEND_PROXY_SECRET = os.environ.get('FRONTEND_PROXY_SECRET', '')
 INBOUND_EMAIL_DOMAIN = os.environ.get('INBOUND_EMAIL_DOMAIN', '')
 INBOUND_EMAIL_SECRET = os.environ.get('INBOUND_EMAIL_SECRET', '')
 
+# Sign in with Google (accounts/google.py): the OAuth client from Google Cloud Console. Empty ID:
+# feature off. The secret stays here; the Next.js server only needs the ID.
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
+
 # Password reset links (sent by email) open this site and stop working after an hour.
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
 PASSWORD_RESET_TIMEOUT = 60 * 60

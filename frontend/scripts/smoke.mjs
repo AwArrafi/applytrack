@@ -14,13 +14,15 @@ const PAGES = [
   "/applications/999999", "/applications/abc", "/interviews", "/interviews?past_page=99",
   "/interviews?edit=999999", "/interviews?schedule=2026-10-20", "/analytics", "/analytics?period=all",
   "/analytics?period=bogus", "/settings", "/login", "/login?deleted=1", "/register", "/forgot-password",
-  "/reset-password?uid=x&token=y", "/privacy",
+  "/reset-password?uid=x&token=y", "/privacy", "/login?google=failed",
+  // Without GOOGLE_CLIENT_ID, or with a code this browser didn't ask for: back to sign in.
+  "/auth/google", "/auth/google/callback", "/auth/google/callback?code=x&state=forged",
 ];
 const STATES = { "signed out": null, "stale cookie": "stale-token-from-another-device", "signed in": VALID };
 
 /** Where a visitor in this state should land after all redirects. */
 function expectedEnd(path, state) {
-  const pathname = path.split("?")[0];
+  const pathname = path.startsWith("/auth/google") ? "/login" : path.split("?")[0];
   if (state === "signed in") return SIGNED_OUT_ONLY.includes(pathname) ? "/" : pathname;
   // proxy.ts can't tell a stale cookie from a valid one, so /register first goes via the
   // dashboard, which clears the cookie on /login; the next click on "sign up" works.

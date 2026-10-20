@@ -105,17 +105,20 @@ class PasswordResetConfirmView(AuthView):
 
 
 class PasswordChangeView(APIView):
-    """For a signed-in user who knows their password. Other devices are signed out; this one
-    gets a fresh token so it stays signed in."""
+    """For a signed-in user who knows their password, or who has none yet (made with Google).
+    Other devices are signed out; this one gets a fresh token so it stays signed in."""
 
     class Input(serializers.Serializer):
-        current_password = serializers.CharField(trim_whitespace=False)
+        current_password = serializers.CharField(trim_whitespace=False, required=False)
         new_password = serializers.CharField(trim_whitespace=False)
 
-        def validate_current_password(self, value):
-            if not self.context['user'].check_password(value):
-                raise serializers.ValidationError(gettext_lazy('Your current password is incorrect.'))
-            return value
+        def validate(self, attrs):
+            user = self.context['user']
+            if user.has_usable_password() and not user.check_password(attrs.get('current_password', '')):
+                raise serializers.ValidationError(
+                    {'current_password': [gettext_lazy('Your current password is incorrect.')]}
+                )
+            return attrs
 
         def validate_new_password(self, value):
             return check_password_rules(value, self.context['user'])

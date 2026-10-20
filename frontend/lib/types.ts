@@ -114,6 +114,8 @@ export interface User {
   /** IANA name, e.g. "Asia/Jakarta"; the API's dates and times are in this zone. */
   time_zone: string;
   language: "id" | "en";
+  /** False for accounts made with Google until they create a password. */
+  has_password: boolean;
 }
 
 /** One page of a paginated list from the API. */

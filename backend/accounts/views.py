@@ -23,8 +23,11 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'name', 'weekly_goal', 'time_zone', 'language']
+        fields = ['id', 'email', 'name', 'weekly_goal', 'time_zone', 'language', 'has_password']
         read_only_fields = ['id', 'email']
+
+    # False for accounts made with Google: Settings then asks for the email instead of a password.
+    has_password = serializers.BooleanField(source='has_usable_password', read_only=True)
 
 
 class RegisterSerializer(serializers.Serializer):
@@ -130,15 +133,21 @@ class MeView(APIView):
 
 class DeleteAccountView(APIView):
     """Deletes the signed-in user and everything they own (applications, interviews, status
-    history, forwarded emails, sessions: all cascade). Needs the password; can't be undone."""
+    history, forwarded emails, sessions: all cascade). Needs the password, or the account's email
+    for an account without one (made with Google); can't be undone."""
 
     class Input(serializers.Serializer):
-        password = serializers.CharField(trim_whitespace=False)
+        password = serializers.CharField(trim_whitespace=False, required=False)
+        email = serializers.CharField(required=False)
 
-        def validate_password(self, value):
-            if not self.context['user'].check_password(value):
-                raise serializers.ValidationError(_('Your password is incorrect.'))
-            return value
+        def validate(self, attrs):
+            user = self.context['user']
+            if user.has_usable_password():
+                if not user.check_password(attrs.get('password', '')):
+                    raise serializers.ValidationError({'password': [_('Your password is incorrect.')]})
+            elif attrs.get('email', '').strip().lower() != user.email:
+                raise serializers.ValidationError({'email': [_("This is not your account's email.")]})
+            return attrs
 
     # Guessing the password here is limited like sign-in.
     throttle_classes = [ScopedRateThrottle]

@@ -7,5 +7,5 @@ export async function generateMetadata() {
 }
 
 export default function Page() {
-  return <AuthForm mode="register" />;
+  return <AuthForm mode="register" google={Boolean(process.env.GOOGLE_CLIENT_ID)} />;
 }
