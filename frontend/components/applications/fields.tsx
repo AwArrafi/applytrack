@@ -41,7 +41,7 @@ export function Field({ label, htmlFor, required, errors, children }: FieldProps
 export function WorkArrangementField({ defaultValue }: { defaultValue: WorkArrangement }) {
   const { t } = useI18n();
   return (
-    <fieldset>
+    <fieldset className="min-w-0">
       <legend className="mb-1 text-xs font-medium text-ink">{t.applicationForm.workArrangement}</legend>
       {/* Same height, border and background as the text inputs next to it. */}
       <div className="grid h-9 grid-cols-3 gap-1 rounded-lg border border-line bg-canvas p-0.5 text-center">
@@ -66,6 +66,8 @@ export function WorkArrangementField({ defaultValue }: { defaultValue: WorkArran
     </fieldset>
   );
 }
+
+// min-w-0 on the fieldsets: by default a <fieldset> refuses to shrink below its content.
 
 /**
  * Expected salary: one currency choice, shown as a prefix on both amounts. Optional, so it can be
@@ -112,7 +114,7 @@ export function SalaryFields({
           defaultValue={value ?? ""}
           aria-label={`${label} (${currency})`}
           placeholder={placeholder}
-          className="min-w-0 flex-1 bg-transparent px-3 text-sm text-ink placeholder:text-ink-subtle focus:outline-none"
+          className="w-0 min-w-0 flex-1 bg-transparent px-3 text-sm text-ink placeholder:text-ink-subtle focus:outline-none"
         />
       </div>
       {errors[name]?.map((message) => (
@@ -122,7 +124,7 @@ export function SalaryFields({
   );
 
   return (
-    <fieldset>
+    <fieldset className="min-w-0">
       <legend className="sr-only">{f.salaryExpectation}</legend>
       <div className="mb-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <span className="text-xs font-medium text-ink" aria-hidden="true">{f.salaryExpectation}</span>
@@ -134,7 +136,7 @@ export function SalaryFields({
             name="salary_currency"
             defaultValue={defaults.currency}
             onChange={(event) => setCurrency(event.target.value)}
-            className="rounded-md border border-primary-200 bg-primary-50 py-0.5 pl-2 pr-1 font-mono text-[11px] font-semibold text-primary-700 focus:outline-none focus:ring-1 focus:ring-primary-600 max-sm:h-9 max-sm:flex-1"
+            className="rounded-md border border-primary-200 bg-primary-50 py-0.5 pl-2 pr-1 font-mono text-[11px] font-semibold text-primary-700 focus:outline-none focus:ring-1 focus:ring-primary-600 max-sm:h-9 max-sm:min-w-0 max-sm:flex-1"
           >
             {codes.map((code) => (
               <option key={code} value={code}>{f.currencies[code] ?? code}</option>
@@ -143,7 +145,8 @@ export function SalaryFields({
         </label>
       </div>
       {/* Stacked on phones: side by side the placeholders get cut off. */}
-      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
+      {/* grid-cols-1 caps the track at the fieldset's width; w-0 above stops a number input's default ~20-character width from widening it. */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
         {amount("salary_min", f.salaryFrom, f.salaryFromPlaceholder, defaults.min)}
         {amount("salary_max", f.salaryTo, f.salaryToPlaceholder, defaults.max)}
       </div>

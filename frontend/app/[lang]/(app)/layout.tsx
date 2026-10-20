@@ -1,12 +1,24 @@
 import { Suspense } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { apiGet, getCurrentUser } from "@/lib/api";
+import { getServerI18n } from "@/lib/i18n/server";
 import type { DashboardSummary } from "@/lib/types";
 
 // Every page in (app) belongs to the signed-in user, so the frame waits for who that is.
-export default function AppLayout({ children }: LayoutProps<"/[lang]">) {
+export default async function AppLayout({ children }: LayoutProps<"/[lang]">) {
+  const { t } = await getServerI18n();
   return (
-    <Suspense fallback={<div className="min-h-full bg-canvas" />}>
+    <Suspense
+      fallback={
+        // Usually gone in a blink. The note fades in only after 3s: a sleeping free-tier backend
+        // can take up to a minute to wake, and a blank screen that long looks broken.
+        <div className="flex min-h-dvh items-center justify-center bg-canvas px-6">
+          <p role="status" className="max-w-xs animate-[fade-in_0.3s_ease-out_3s_both] text-center text-sm text-ink-muted">
+            {t.common.wakingUp}
+          </p>
+        </div>
+      }
+    >
       <SignedInShell>{children}</SignedInShell>
     </Suspense>
   );

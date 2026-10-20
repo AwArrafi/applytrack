@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { LanguageSwitcher } from "@/components/layout/Sidebar";
-import { LogoMark } from "@/components/ui/icons";
+import { ChevronRightIcon, LogoMark } from "@/components/ui/icons";
 import { getServerI18n } from "@/lib/i18n/server";
 
 export async function generateMetadata() {
@@ -11,7 +11,7 @@ export async function generateMetadata() {
 
 // Set at deploy (e.g. privasi@applytrack.my.id); until then the page says how to reach us instead.
 const CONTACT_EMAIL = process.env.CONTACT_EMAIL;
-const LAST_UPDATED = "2026-10-17";
+const LAST_UPDATED = "2026-10-20";
 
 type Section = { title: string; body: ReactNode };
 
@@ -96,17 +96,11 @@ const SECTIONS: Record<"id" | "en", Section[]> = {
     {
       title: "Pihak yang membantu kami",
       body: (
-        <>
-          {list([
-            "Penyedia hosting server dan database, tempat aplikasi dan data Anda disimpan.",
-            "Resend, untuk mengirim email atur ulang kata sandi.",
-            "Cloudflare, untuk mengelola domain dan menerima email yang Anda teruskan.",
-          ])}
-          <p className="mt-3">
-            Server penyedia tersebut dapat berada di luar Indonesia. Kami hanya memakai penyedia dengan standar keamanan yang
-            memadai, dan mereka hanya memproses data untuk menjalankan layanan ApplyTrack.
-          </p>
-        </>
+        <p>
+          Untuk menjalankan ApplyTrack, kami menggunakan beberapa penyedia layanan pihak ketiga, seperti penyedia hosting dan
+          layanan email. Mereka hanya memproses data sejauh diperlukan untuk menjalankan layanan ini. Server penyedia tersebut
+          dapat berada di luar Indonesia, dan kami hanya memakai penyedia dengan standar keamanan yang memadai.
+        </p>
       ),
     },
     {
@@ -225,17 +219,11 @@ const SECTIONS: Record<"id" | "en", Section[]> = {
     {
       title: "Who helps us",
       body: (
-        <>
-          {list([
-            "Our server and database hosting provider, where the app and your data are stored.",
-            "Resend, to send password reset emails.",
-            "Cloudflare, to manage our domain and receive the emails you forward.",
-          ])}
-          <p className="mt-3">
-            These providers&apos; servers may be outside Indonesia. We only use providers with adequate security standards, and
-            they only process data to run ApplyTrack.
-          </p>
-        </>
+        <p>
+          To run ApplyTrack, we use a few third-party service providers, such as hosting and email services. They only process
+          data as far as needed to run this service. Their servers may be outside Indonesia, and we only use providers with
+          adequate security standards.
+        </p>
       ),
     },
     {
@@ -307,6 +295,14 @@ export default async function PrivacyPage() {
           <LanguageSwitcher />
         </div>
       </div>
+      {/* "/" opens the dashboard when signed in; proxy.ts sends everyone else to sign in. */}
+      <Link
+        href="/"
+        className="mb-4 inline-flex items-center gap-1 rounded text-sm font-medium text-primary-700 hover:underline focus-visible:outline-2 focus-visible:outline-primary-600"
+      >
+        <ChevronRightIcon className="size-4 rotate-180" />
+        {t.privacy.back}
+      </Link>
       <article className="rounded-2xl border border-line bg-surface p-6 text-sm leading-relaxed text-ink-muted shadow-card sm:p-8">
         <h1 className="text-2xl font-semibold tracking-tight text-ink">{t.privacy.title}</h1>
         <p className="mt-1 text-xs text-ink-subtle">{t.privacy.lastUpdated(f.date(LAST_UPDATED))}</p>

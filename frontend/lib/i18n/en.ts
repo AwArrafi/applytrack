@@ -39,6 +39,7 @@ export const en: Dictionary = {
     analytics: "Analytics",
   },
   common: {
+    wakingUp: "Getting ApplyTrack ready… After a quiet spell this can take up to a minute.",
     addApplication: "Add Application",
     searchLabel: "Search applications",
     searchPlaceholder: "Search companies, roles, notes...",
@@ -389,6 +390,7 @@ export const en: Dictionary = {
   privacy: {
     title: "Privacy Policy",
     link: "Privacy Policy",
+    back: "Back to ApplyTrack",
     lastUpdated: (date: string) => `Last updated ${date}`,
     agreeBefore: "By creating an account, you agree to our ",
     agreeAfter: ".",

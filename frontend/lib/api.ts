@@ -21,8 +21,13 @@ export function apiUrl(): string {
   return "http://127.0.0.1:8001/api";
 }
 
-/** A Django that hangs gets an error page or message after this long, not an endless spinner. */
-export const API_TIMEOUT_MS = 10_000;
+/**
+ * A Django that hangs gets an error page or message after this long, not an endless spinner.
+ * shortcut: 60s covers Render Free waking from sleep (~50s, the first visit after 15 idle minutes;
+ * a shorter limit showed that visitor an error page). Lower it once the backend is on an always-on plan.
+ * Vercel's own limit on Hobby is 300s, so a request may wait this long.
+ */
+export const API_TIMEOUT_MS = 60_000;
 
 /**
  * Headers every API call sends: the session token, the language for Django's messages, and the
