@@ -15,6 +15,7 @@ import urllib.request
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers, status
+from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
 
 from .models import User
@@ -71,8 +72,18 @@ class GoogleLoginView(AuthView):
         if user is None:
             extra = {'language': fields['language']} if 'language' in fields else {}
             # No password (unusable): Google signs them in, or they set one via "forgot password".
-            user = User.objects.create_user(claims['email'], name=claims.get('name', '')[:150], **extra)
+            user = User.objects.create_user(
+                claims['email'], name=claims.get('name', '')[:150], email_verified=True, **extra
+            )
             return session_response(user, status.HTTP_201_CREATED)
         if not user.is_active:
             raise failed
+        if not user.email_verified:
+            # Someone signed up with this address and a password but never proved they own it,
+            # perhaps to wait for the real owner inside the account. The owner just proved it:
+            # drop that password and every session made with it.
+            user.email_verified = True
+            user.set_unusable_password()
+            user.save()
+            Token.objects.filter(user=user).delete()
         return session_response(user, status.HTTP_200_OK)

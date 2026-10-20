@@ -17,11 +17,14 @@ const PAGES = [
   "/reset-password?uid=x&token=y", "/privacy", "/login?google=failed",
   // Without GOOGLE_CLIENT_ID, or with a code this browser didn't ask for: back to sign in.
   "/auth/google", "/auth/google/callback", "/auth/google/callback?code=x&state=forged",
+  "/verify-email/confirm?token=forged", "/verify-email",
 ];
 const STATES = { "signed out": null, "stale cookie": "stale-token-from-another-device", "signed in": VALID };
 
 /** Where a visitor in this state should land after all redirects. */
 function expectedEnd(path, state) {
+  // These only redirect: to sign in, or (already verified) to the dashboard.
+  if (path.startsWith("/verify-email")) return state === "signed in" ? "/" : "/login";
   const pathname = path.startsWith("/auth/google") ? "/login" : path.split("?")[0];
   if (state === "signed in") return SIGNED_OUT_ONLY.includes(pathname) ? "/" : pathname;
   // proxy.ts can't tell a stale cookie from a valid one, so /register first goes via the

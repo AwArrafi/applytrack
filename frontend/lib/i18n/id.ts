@@ -409,6 +409,20 @@ export const id = {
     deleting: "Menghapus…",
     done: "Akun Anda beserta seluruh datanya telah dihapus.",
   },
+  verifyEmail: {
+    title: "Cek email Anda",
+    sentBefore: "Kami telah mengirim tautan verifikasi ke ",
+    sentAfter: ". Buka tautan itu untuk mulai memakai ApplyTrack.",
+    spam: "Tidak menemukan emailnya? Periksa folder spam, atau kirim ulang. Tautan berlaku selama 3 hari.",
+    resend: "Kirim ulang email",
+    sending: "Mengirim…",
+    resent: "Email verifikasi telah dikirim ulang.",
+    done: "Saya sudah memverifikasi",
+    otherEmail: "Keluar dan gunakan email lain",
+    invalid: "Tautan verifikasi tidak valid atau sudah kedaluwarsa. Kirim ulang untuk mendapatkan tautan baru.",
+    invalidSignedOut: "Tautan verifikasi tidak valid atau sudah kedaluwarsa. Masuk untuk mengirim tautan baru.",
+    verified: "Email Anda telah terverifikasi. Silakan masuk.",
+  },
   settings: {
     title: "Pengaturan",
     description: "Atur profil dan preferensi akun Anda.",
@@ -487,7 +501,10 @@ export const id = {
       "Ini kata sandi khusus ApplyTrack, bukan kata sandi akun Google Anda. Perangkat lain akan keluar otomatis; perangkat ini tetap masuk.",
     setTitle: "Buat kata sandi",
     setHint:
-      "Akun Anda dibuat dengan Google. Buat kata sandi khusus ApplyTrack (bukan kata sandi Google Anda) agar bisa juga masuk dengan email.",
+      "Akun Anda dibuat dengan Google. Agar bisa juga masuk dengan email, buat kata sandi khusus ApplyTrack (bukan kata sandi Google Anda). Demi keamanan, kami kirim tautannya ke email Anda.",
+    setButton: "Kirim tautan ke email",
+    setSent:
+      "Tautan telah dikirim. Buka email Anda untuk membuat kata sandi; tautan berlaku 1 jam. Periksa juga folder spam.",
     changeDone: "Kata sandi berhasil diubah.",
   },
 };

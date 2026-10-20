@@ -51,6 +51,7 @@ export async function apiGet<T>(path: string): Promise<T> {
   const response = await fetch(`${apiUrl()}${path}`, { headers: requestHeaders, signal: AbortSignal.timeout(API_TIMEOUT_MS) });
   // Signed out elsewhere or the session expired; proxy.ts drops the stale cookie on this URL.
   if (response.status === 401) redirect("/login?expired=1");
+  if (response.status === 403) redirect("/verify-email"); // signed in, but the email isn't verified yet
   if (response.status === 404) notFound(); // e.g. a deleted application: show the 404 page
   if (!response.ok) throw new Error(`GET ${path} failed with status ${response.status}`);
   return response.json();

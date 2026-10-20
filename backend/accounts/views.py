@@ -1,21 +1,24 @@
-import hashlib
+import logging
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
-from django.core.cache import cache
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers, status
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import Throttled, ValidationError
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from config.throttling import ScopedRateThrottle
 
 from .authentication import is_expired
+from . import lockout
 from .models import User
+from .verification import read_token, send_verification_email
+
+logger = logging.getLogger(__name__)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -23,8 +26,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'name', 'weekly_goal', 'time_zone', 'language', 'has_password']
-        read_only_fields = ['id', 'email']
+        fields = ['id', 'email', 'name', 'weekly_goal', 'time_zone', 'language', 'has_password', 'email_verified']
+        read_only_fields = ['id', 'email', 'email_verified']
 
     # False for accounts made with Google: Settings then asks for the email instead of a password.
     has_password = serializers.BooleanField(source='has_usable_password', read_only=True)
@@ -87,33 +90,30 @@ class RegisterView(AuthView):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = User.objects.create_user(**serializer.validated_data)
+        try:
+            send_verification_email(user)
+        except Exception:  # the account exists either way; the "check your email" page can resend
+            logger.exception('Could not send the verification email to user %s', user.pk)
         return session_response(user, status.HTTP_201_CREATED)
-
-
-# Per account, on top of the per-visitor 'auth' rate: someone guessing one account's password from
-# many IP addresses is stopped too. Counted for any email, registered or not, so it reveals nothing.
-MAX_FAILED_LOGINS = 5
-FAILED_LOGIN_WINDOW = 15 * 60  # seconds, from the first failure
 
 
 class LoginView(AuthView):
     def post(self, request):
-        email = str(request.data.get('email', '')).strip().lower()
-        # Hashed: the raw input could be any length or characters, cache keys can't.
-        key = 'failed-logins:' + hashlib.sha256(email.encode()).hexdigest()
-        if cache.get(key, 0) >= MAX_FAILED_LOGINS:
-            raise Throttled(detail=_('Too many failed sign-in attempts for this account. Try again in 15 minutes.'))
+        email = str(request.data.get('email', ''))
+        if lockout.is_locked(email):  # 5 wrong passwords: 15 minutes (accounts/lockout.py)
+            raise Throttled(detail=lockout.LOCKED_MESSAGE)
         serializer = LoginSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             if 'non_field_errors' in serializer.errors:  # a wrong password, not a malformed form
-                cache.add(key, 0, FAILED_LOGIN_WINDOW)
-                cache.incr(key)
+                lockout.record_failure(email)
             raise ValidationError(serializer.errors)
-        cache.delete(key)
+        lockout.clear_failures(email)
         return session_response(serializer.validated_data['user'], status.HTTP_200_OK)
 
 
 class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]  # unverified accounts can sign out too
+
     def post(self, request):
         # Signs out everywhere: there's one token per account.
         Token.objects.filter(user=request.user).delete()
@@ -121,6 +121,9 @@ class LogoutView(APIView):
 
 
 class MeView(APIView):
+    # Unverified accounts too: the frontend reads email_verified here, and the language switch saves here.
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         return Response(UserSerializer(request.user).data)
 
@@ -156,4 +159,36 @@ class DeleteAccountView(APIView):
     def post(self, request):
         self.Input(data=request.data, context={'user': request.user}).is_valid(raise_exception=True)
         request.user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class VerifyEmailView(AuthView):
+    """Opens the emailed link. Works signed out too: the link may be opened on another device."""
+
+    class Input(serializers.Serializer):
+        token = serializers.CharField()
+
+    def post(self, request):
+        data = self.Input(data=request.data)
+        data.is_valid(raise_exception=True)
+        found = read_token(data.validated_data['token'])
+        user = User.objects.filter(pk=found[0], email=found[1], is_active=True).first() if found else None
+        if user is None:
+            raise ValidationError({'token': [_('This link is invalid or has expired.')]})
+        if not user.email_verified:
+            user.email_verified = True
+            user.save(update_fields=['email_verified'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ResendVerificationView(APIView):
+    """Sends the link again, a few times per hour at most (REST_FRAMEWORK's 'verify_email' scope)."""
+
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'verify_email'
+
+    def post(self, request):
+        if not request.user.email_verified:
+            send_verification_email(request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -30,7 +30,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None, **fields):
-        return self.create_user(email, password, is_staff=True, is_superuser=True, **fields)
+        return self.create_user(email, password, is_staff=True, is_superuser=True, email_verified=True, **fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -40,6 +40,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     # One field: many Indonesian names don't split into first and last name.
     name = models.CharField(max_length=150, blank=True)
     is_active = models.BooleanField(default=True)
+    # Until the emailed link is opened, the account can only see the "check your email" page.
+    email_verified = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)  # can open the Django admin
     date_joined = models.DateTimeField(default=timezone.now)
 

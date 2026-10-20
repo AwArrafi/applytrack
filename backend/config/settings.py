@@ -219,7 +219,8 @@ REST_FRAMEWORK = {
         'accounts.authentication.ExpiringTokenAuthentication',  # the Next.js frontend
         'rest_framework.authentication.SessionAuthentication',  # the browsable API, when signed in to the admin
     ],
-    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
+    # Signed in with a verified email (accounts/verification.py); a few account views relax it.
+    'DEFAULT_PERMISSION_CLASSES': ['accounts.verification.IsVerified'],
     # Every signed-in user and every anonymous IP gets a ceiling; some views add a stricter scope.
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.UserRateThrottle',
@@ -230,6 +231,7 @@ REST_FRAMEWORK = {
         'anon': '60/minute',
         'auth': '10/minute',  # sign-in, sign-up, password reset and change
         'import': '30/minute',  # pasted portal emails
+        'verify_email': '5/hour',  # resending the verification link, per account
     },
     # The browsable HTML API is a development tool; production only speaks JSON.
     'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer']

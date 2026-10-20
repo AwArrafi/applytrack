@@ -114,7 +114,7 @@ jobs:
           ./build.sh  # the same script Render runs on every deploy
           python manage.py shell -c "
           from accounts.models import User; from rest_framework.authtoken.models import Token
-          user = User.objects.create_user('smoke@example.com', 'smoke-test-pass-123')
+          user = User.objects.create_user('smoke@example.com', 'smoke-test-pass-123', email_verified=True)
           print(Token.objects.create(user=user).key)" > ../token.txt
           python manage.py runserver 8001 --noreload > ../django.log 2>&1 &
       - name: Build and start Next.js

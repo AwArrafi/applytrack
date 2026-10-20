@@ -116,6 +116,8 @@ export interface User {
   language: "id" | "en";
   /** False for accounts made with Google until they create a password. */
   has_password: boolean;
+  /** False until the emailed link is opened; the app is locked to /verify-email until then. */
+  email_verified: boolean;
 }
 
 /** One page of a paginated list from the API. */
