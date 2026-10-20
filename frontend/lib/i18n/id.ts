@@ -394,8 +394,8 @@ export const id = {
     link: "Kebijakan Privasi",
     back: "Kembali ke ApplyTrack",
     lastUpdated: (date: string) => `Terakhir diperbarui ${date}`,
-    agreeBefore: "Dengan membuat akun, Anda menyetujui ",
-    agreeAfter: " kami.",
+    agreeBefore: "Dengan melanjutkan, Anda menyetujui ",
+    agreeAfter: " ApplyTrack.",
   },
   deleteAccount: {
     title: "Hapus akun",
@@ -403,6 +403,7 @@ export const id = {
     whatIsDeleted:
       "Semua lamaran, jadwal interview, riwayat status, catatan, dan email yang diteruskan akan ikut terhapus. Tindakan ini tidak dapat dibatalkan.",
     password: "Kata sandi Anda",
+    email: "Ketik email akun Anda untuk konfirmasi",
     confirm: "Saya mengerti bahwa akun dan seluruh data saya akan dihapus permanen.",
     submit: "Hapus akun saya",
     deleting: "Menghapus…",
@@ -438,7 +439,14 @@ export const id = {
     showPassword: "Tampilkan kata sandi",
     hidePassword: "Sembunyikan kata sandi",
     loginTitle: "Masuk ke ApplyTrack",
-    loginDescription: "Lanjutkan memantau lamaran kerja Anda.",
+    loginDescription: "Selamat datang kembali. Lanjutkan memantau lamaran kerja Anda.",
+    googleLogin: "Masuk dengan Google",
+    googleRegister: "Daftar dengan Google",
+    googleFailed: "Gagal masuk dengan Google. Silakan coba lagi, atau masuk dengan email.",
+    or: "atau",
+    showcaseTitle: "Semua lamaran kerja Anda, rapi di satu tempat.",
+    showcaseCard: "Lamaran aktif",
+    showcaseCount: "12 lamaran",
     registerTitle: "Buat akun ApplyTrack",
     registerDescription: "Gratis. Catat lamaran, jadwal interview, dan hasilnya di satu tempat.",
     name: "Nama",
@@ -475,7 +483,11 @@ export const id = {
     requestNewLink: "Minta tautan baru",
     changeTitle: "Ubah kata sandi",
     currentPassword: "Kata sandi saat ini",
-    changeHint: "Perangkat lain akan keluar otomatis; perangkat ini tetap masuk.",
+    changeHint:
+      "Ini kata sandi khusus ApplyTrack, bukan kata sandi akun Google Anda. Perangkat lain akan keluar otomatis; perangkat ini tetap masuk.",
+    setTitle: "Buat kata sandi",
+    setHint:
+      "Akun Anda dibuat dengan Google. Buat kata sandi khusus ApplyTrack (bukan kata sandi Google Anda) agar bisa juga masuk dengan email.",
     changeDone: "Kata sandi berhasil diubah.",
   },
 };

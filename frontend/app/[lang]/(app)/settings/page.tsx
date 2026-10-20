@@ -27,12 +27,24 @@ export default async function SettingsPage() {
       <Suspense fallback={<Card><p className="py-10 text-center text-sm text-ink-muted">…</p></Card>}>
         <EmailForwardingCard />
       </Suspense>
-      <ChangePasswordForm />
-      <DeleteAccountForm />
+      <Suspense fallback={<Card><p className="py-10 text-center text-sm text-ink-muted">…</p></Card>}>
+        <AccountForms />
+      </Suspense>
       <Link href="/privacy" className="block text-center text-xs text-ink-subtle hover:text-ink hover:underline">
         {t.privacy.link}
       </Link>
     </div>
+  );
+}
+
+/** Accounts made with Google have no password yet; these two forms ask differently then. */
+async function AccountForms() {
+  const { has_password } = await getCurrentUser();
+  return (
+    <>
+      <ChangePasswordForm hasPassword={has_password} />
+      <DeleteAccountForm hasPassword={has_password} />
+    </>
   );
 }
 

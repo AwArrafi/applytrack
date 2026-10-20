@@ -49,7 +49,8 @@ const SECTIONS: Record<"id" | "en", Section[]> = {
       body: list([
         <>
           <strong>Akun:</strong> email, nama (opsional), dan preferensi (bahasa, zona waktu, target lamaran mingguan). Kata
-          sandi disimpan dalam bentuk hash, sehingga kami sendiri tidak dapat membacanya.
+          sandi disimpan dalam bentuk hash, sehingga kami sendiri tidak dapat membacanya. Jika Anda masuk dengan Google, kami
+          hanya menerima email dan nama akun Google Anda, tanpa akses ke Gmail atau data Google lainnya.
         </>,
         <>
           <strong>Data yang Anda masukkan:</strong> lamaran (perusahaan, posisi, deskripsi, tautan, tanggal, status, gaji,
@@ -172,7 +173,8 @@ const SECTIONS: Record<"id" | "en", Section[]> = {
       body: list([
         <>
           <strong>Account:</strong> email, name (optional), and preferences (language, time zone, weekly application goal).
-          Passwords are stored as a hash, so even we can&apos;t read them.
+          Passwords are stored as a hash, so even we can&apos;t read them. If you sign in with Google, we only receive your
+          Google account&apos;s email and name, with no access to your Gmail or other Google data.
         </>,
         <>
           <strong>What you enter:</strong> applications (company, role, description, link, dates, status, salary, location,

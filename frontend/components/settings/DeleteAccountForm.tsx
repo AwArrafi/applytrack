@@ -2,15 +2,18 @@
 
 import { startTransition, useActionState, useState } from "react";
 import { deleteAccount, type SaveState } from "@/app/actions";
-import { Field } from "@/components/applications/fields";
+import { Field, inputClass } from "@/components/applications/fields";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { useI18n } from "@/components/I18nProvider";
 import { Card } from "@/components/ui/Card";
 
 const INITIAL_STATE: SaveState = { ok: false, errors: {} };
 
-/** Settings: delete the account for good. Needs the password and an explicit "I understand". */
-export function DeleteAccountForm() {
+/**
+ * Settings: delete the account for good. Needs the password (or, for an account made with Google,
+ * its email) and an explicit "I understand".
+ */
+export function DeleteAccountForm({ hasPassword }: { hasPassword: boolean }) {
   const { t } = useI18n();
   const d = t.deleteAccount;
   const [state, formAction, pending] = useActionState(deleteAccount, INITIAL_STATE);
@@ -29,9 +32,15 @@ export function DeleteAccountForm() {
         }}
       >
         <p className="rounded-lg bg-rose-50 p-3 text-sm text-rose-800 ring-1 ring-inset ring-rose-200">{d.whatIsDeleted}</p>
-        <Field label={d.password} htmlFor="delete-password" errors={state.errors.password}>
-          <PasswordInput id="delete-password" name="password" required autoComplete="current-password" className="sm:max-w-[calc(50%-0.5rem)]" />
-        </Field>
+        {hasPassword ? (
+          <Field label={d.password} htmlFor="delete-password" errors={state.errors.password}>
+            <PasswordInput id="delete-password" name="password" required autoComplete="current-password" className="sm:max-w-[calc(50%-0.5rem)]" />
+          </Field>
+        ) : (
+          <Field label={d.email} htmlFor="delete-email" errors={state.errors.email}>
+            <input id="delete-email" name="email" type="email" required autoComplete="off" className={`${inputClass} sm:max-w-[calc(50%-0.5rem)]`} />
+          </Field>
+        )}
         <label className="flex items-start gap-2 text-sm text-ink">
           <input
             type="checkbox"
