@@ -38,6 +38,7 @@ export const id = {
     analytics: "Analitik",
   },
   common: {
+    wakingUp: "Menyiapkan ApplyTrack… Setelah lama tidak dibuka, ini bisa butuh hingga satu menit.",
     addApplication: "Tambah Lamaran",
     searchLabel: "Cari lamaran",
     searchPlaceholder: "Cari perusahaan, posisi, catatan...",
@@ -391,6 +392,7 @@ export const id = {
   privacy: {
     title: "Kebijakan Privasi",
     link: "Kebijakan Privasi",
+    back: "Kembali ke ApplyTrack",
     lastUpdated: (date: string) => `Terakhir diperbarui ${date}`,
     agreeBefore: "Dengan membuat akun, Anda menyetujui ",
     agreeAfter: " kami.",
